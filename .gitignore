@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Environment secrets — NEVER commit real values
+.env
+.env.local
+*.env
+!.env.example
+
+# Build output
+dist/
+build/
+*/dist/
+*/build/
+
+# Prisma
+*/prisma/migrations/**/migration_lock.toml
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+*.log
+
+# Zip/archive files (accidentally included earlier)
+*.zip

@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #1A1A1A;
+    color: #FAF7F2;
+    font-family: 'Playfair Display', serif; /* Gives you that elegant editorial heading look */
+  }
+}
+
+
+  h1, h2, h3, h4, h5, h6 {
+    color: #F8F6F2;
+    @apply font-serif tracking-tight;
+  }
+
