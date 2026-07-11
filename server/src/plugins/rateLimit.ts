@@ -57,3 +57,19 @@ export const refreshLimit = {
     },
   },
 };
+
+/** Quote submissions: 10 per IP per hour */
+export const quoteLimit = {
+  config: {
+    rateLimit: {
+      max:        10,
+      timeWindow: '1 hour',
+      keyGenerator: (req: { ip: string }) => `quote:ip:${req.ip}`,
+      errorResponseBuilder: () => ({
+        statusCode: 429,
+        error:      'TOO_MANY_REQUESTS',
+        message:    'Too many quotation requests from this IP. Please try again in an hour.',
+      }),
+    },
+  },
+};

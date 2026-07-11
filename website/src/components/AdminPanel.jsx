@@ -18,7 +18,7 @@ function getRefreshedToken() {
       method: 'POST',
       credentials: 'include',
     })
-      .then((res) => {
+      .then((res) => { 
         if (!res.ok) throw new Error('Session refresh failed');
         return res.json();
       })
@@ -32,16 +32,23 @@ function getRefreshedToken() {
 
 // ─── DESIGN TOKENS ───────────────────────────────────────────────────────────
 const T = {
-  green:  { base: '#4AFF91', dim: 'rgba(74,255,145,0.10)',  glow: '0 0 14px rgba(74,255,145,0.45)'  },
-  amber:  { base: '#FFB800', dim: 'rgba(255,184,0,0.10)',   glow: '0 0 14px rgba(255,184,0,0.45)'   },
-  blue:   { base: '#6BA0FF', dim: 'rgba(107,160,255,0.10)', glow: '0 0 14px rgba(107,160,255,0.45)' },
-  red:    { base: '#FF4444', dim: 'rgba(255,68,68,0.10)',   glow: '0 0 14px rgba(255,68,68,0.45)'   },
-  bg0:    '#080808',
-  bg1:    '#0E0E0E',
-  bg2:    '#161616',
-  border: '#1E1E1E',
-  muted:  '#3A3A3A',
-  bright: '#E8E8E8',
+  // Primary accent — burnished copper orange
+  copper: { base: '#C8783A', dim: 'rgba(200,120,58,0.12)',  glow: '0 0 16px rgba(200,120,58,0.50)'  },
+  // Secondary — warm amber (warnings / pipeline)
+  amber:  { base: '#D4924A', dim: 'rgba(212,146,74,0.10)',  glow: '0 0 14px rgba(212,146,74,0.40)'  },
+  // Info — steel blue
+  blue:   { base: '#7FA8C4', dim: 'rgba(127,168,196,0.10)', glow: '0 0 14px rgba(127,168,196,0.40)' },
+  // Danger — warm red
+  red:    { base: '#C4503A', dim: 'rgba(196,80,58,0.10)',   glow: '0 0 14px rgba(196,80,58,0.45)'   },
+  // Charcoal scale — warm-tinted darks
+  bg0:    '#100D0B',
+  bg1:    '#181310',
+  bg2:    '#211A16',
+  border: '#2C2218',
+  muted:  '#5A4A40',
+  bright: '#EDE0D4',
+  // Alias so existing refs to T.green still work
+  get green() { return this.copper; },
 };
 
 // ─── NAVIGATION TABS ─────────────────────────────────────────────────────────
@@ -86,7 +93,11 @@ const rowVariant = (i) => ({
 
 const glowPulse = {
   animate: {
-    boxShadow: [T.green.glow.replace('0.45', '0.3'), T.green.glow, T.green.glow.replace('0.45', '0.3')],
+    boxShadow: [
+      '0 0 10px rgba(200,120,58,0.25)',
+      '0 0 18px rgba(200,120,58,0.55)',
+      '0 0 10px rgba(200,120,58,0.25)',
+    ],
     transition: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' },
   },
 };
@@ -94,15 +105,15 @@ const glowPulse = {
 const LOG_COLOR = {
   INFO:  T.blue.base,
   WARN:  T.amber.base,
-  OK:    T.green.base,
+  OK:    T.copper.base,
   ERROR: T.red.base,
 };
 
 const STATUS_PALETTE = {
-  DISPATCHED: { color: T.green.base, bg: T.green.dim  },
-  PROCESSING: { color: T.amber.base, bg: T.amber.dim  },
-  PENDING:    { color: T.blue.base,  bg: T.blue.dim   },
-  CANCELLED:  { color: T.red.base,   bg: T.red.dim    },
+  DISPATCHED: { color: T.copper.base, bg: T.copper.dim },
+  PROCESSING: { color: T.amber.base,  bg: T.amber.dim  },
+  PENDING:    { color: T.blue.base,   bg: T.blue.dim   },
+  CANCELLED:  { color: T.red.base,    bg: T.red.dim    },
 };
 
 function StatusBadge({ status }) {
@@ -118,9 +129,9 @@ function StatusBadge({ status }) {
 }
 
 const inputCls =
-  'w-full bg-[#080808] border border-[#1E1E1E] focus:border-[#4AFF91] ' +
-  'text-[#E8E8E8] text-xs font-mono px-3 py-2 outline-none transition-colors duration-200 tracking-wide';
-const labelCls = 'block text-[9px] tracking-[0.25em] uppercase text-[#444] mb-1';
+  'w-full bg-[#100D0B] border border-[#2C2218] focus:border-[#C8783A] ' +
+  "text-[#EDE0D4] text-xs font-['Poppins'] px-3 py-2 outline-none transition-colors duration-200 tracking-wide placeholder-[#3A2E24]";
+const labelCls = "block text-[9px] tracking-[0.25em] uppercase text-[#6A5040] mb-1 font-['Poppins'] font-semibold";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // § ADD / EDIT PRODUCT MODAL
@@ -282,13 +293,13 @@ function ProductRegistryView({ products, onAdd, onEdit, onDelete }) {
           className="flex-1 min-w-[240px] text-xs font-mono px-4 py-2.5 outline-none transition-colors duration-200 tracking-wide"
           style={{
             backgroundColor: T.bg1,
-            border: `1px solid #1A1A1A`,
+            border: `1px solid ${T.border}`,
             color: T.bright,
           }}
-          onFocus={(e) => (e.currentTarget.style.borderColor = T.green.base)}
-          onBlur={(e)  => (e.currentTarget.style.borderColor = '#1A1A1A')}
+          onFocus={(e) => (e.currentTarget.style.borderColor = T.copper.base)}
+          onBlur={(e)  => (e.currentTarget.style.borderColor = T.border)}
         />
-        <span className="text-[10px] tracking-widest shrink-0" style={{ color: '#2A2A2A' }}>
+        <span className="text-[10px] tracking-widest shrink-0" style={{ color: T.muted }}>
           {filtered.length} / {products.length} RECORDS
         </span>
       </div>
@@ -302,9 +313,9 @@ function ProductRegistryView({ products, onAdd, onEdit, onDelete }) {
             className="grid text-[8px] tracking-[0.25em] uppercase px-4 py-3"
             style={{
               gridTemplateColumns: '2fr 1.2fr 1.4fr 1fr 1.4fr',
-              color: '#333',
+              color: T.muted,
               backgroundColor: T.bg0,
-              borderBottom: '1px solid #191919',
+              borderBottom: `1px solid ${T.border}`,
             }}
           >
             {['PRODUCT NAME', 'CATEGORY', 'SUB-CATEGORY', 'BASE PRICE', 'OPERATIONS'].map((h) => (
@@ -328,12 +339,12 @@ function ProductRegistryView({ products, onAdd, onEdit, onDelete }) {
               className="grid items-center px-4 py-3 transition-colors duration-100 group"
               style={{
                 gridTemplateColumns: '2fr 1.2fr 1.4fr 1fr 1.4fr',
-                borderBottom: '1px solid #111',
-                backgroundColor: i % 2 ? 'rgba(255,255,255,0.010)' : 'transparent',
+                borderBottom: `1px solid ${T.border}`,
+                backgroundColor: i % 2 ? 'rgba(200,120,58,0.03)' : 'transparent',
               }}
-              whileHover={{ backgroundColor: 'rgba(74,255,145,0.025)' }}
+              whileHover={{ backgroundColor: 'rgba(200,120,58,0.06)' }}
             >
-              <span className="text-[10px] tracking-wide truncate pr-2" style={{ color: '#D0D0D0' }}>
+              <span className="text-[10px] tracking-wide truncate pr-2" style={{ color: T.bright }}>
                 {product.name}
               </span>
               <span className="text-[9px] tracking-wide truncate" style={{ color: T.muted }}>
@@ -342,7 +353,7 @@ function ProductRegistryView({ products, onAdd, onEdit, onDelete }) {
               <span className="text-[9px] tracking-wide truncate" style={{ color: T.muted }}>
                 {product.subCategory || '—'}
               </span>
-              <span className="text-[9px] font-bold" style={{ color: T.green.base }}>
+              <span className="text-[9px] font-bold" style={{ color: T.copper.base }}>
                 ${Number(product.priceUsd).toFixed(2)}
               </span>
               <div className="flex gap-1.5">
@@ -386,14 +397,15 @@ function ActionButton({ accent, onClick, label }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
 // § RETAIL SALES LOG VIEW
 // ─────────────────────────────────────────────────────────────────────────────
-function RetailSalesView({ orders }) {
+function RetailSalesView({ orders, onUpdateStatus }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <p className="text-[9px] tracking-widest uppercase" style={{ color: T.muted }}>
-          {orders.length} RETAIL ORDER RECORDS — READ ONLY
+          {orders.length} RETAIL ORDER RECORDS — INTERACTIVE LOG
         </p>
         <span
           className="text-[9px] font-bold tracking-widest flex items-center gap-1.5"
@@ -416,10 +428,10 @@ function RetailSalesView({ orders }) {
           <div
             className="grid text-[8px] tracking-[0.25em] uppercase px-4 py-3"
             style={{
-              gridTemplateColumns: '1fr 1.6fr 1.9fr 1.5fr 0.6fr 1.1fr',
-              color: '#333',
+              gridTemplateColumns: '1fr 1.6fr 1.9fr 1.5fr 0.6fr 1.2fr',
+              color: T.muted,
               backgroundColor: T.bg0,
-              borderBottom: '1px solid #191919',
+              borderBottom: `1px solid ${T.border}`,
             }}
           >
             {['ORDER ID', 'CLIENT FULL NAME', 'EMAIL CONTACT', 'TELEPHONE NUMBER', 'QTY', 'DISPATCH STATUS'].map((h) => (
@@ -427,36 +439,53 @@ function RetailSalesView({ orders }) {
             ))}
           </div>
 
-          {orders.map((order, i) => (
-            <motion.div
-              key={order.id}
-              {...rowVariant(i)}
-              className="grid items-center px-4 py-3 transition-colors duration-100"
-              style={{
-                gridTemplateColumns: '1fr 1.6fr 1.9fr 1.5fr 0.6fr 1.1fr',
-                borderBottom: '1px solid #111',
-                backgroundColor: i % 2 ? 'rgba(255,255,255,0.010)' : 'transparent',
-              }}
-              whileHover={{ backgroundColor: 'rgba(107,160,255,0.03)' }}
-            >
-              <span className="text-[8px] font-bold tracking-wider" style={{ color: '#383838' }}>
-                {order.displayId}
-              </span>
-              <span className="text-[10px]" style={{ color: '#D0D0D0' }}>
-                {order.client?.name || '—'}
-              </span>
-              <span className="text-[9px]" style={{ color: '#4A4A4A' }}>
-                {order.client?.email || '—'}
-              </span>
-              <span className="text-[9px]" style={{ color: '#4A4A4A' }}>
-                {order.client?.phone || '—'}
-              </span>
-              <span className="text-[10px] font-bold text-center" style={{ color: T.bright }}>
-                {order.items?.reduce((acc, it) => acc + it.qty, 0) || 0}
-              </span>
-              <StatusBadge status={order.status} />
-            </motion.div>
-          ))}
+          {orders.map((order, i) => {
+            const currentStatus = order.status || 'PENDING';
+            const s = STATUS_PALETTE[currentStatus] ?? { color: T.bright, bg: 'rgba(224,224,224,0.06)' };
+            
+            return (
+              <motion.div
+                key={order.id}
+                {...rowVariant(i)}
+                className="grid items-center px-4 py-3 transition-colors duration-100"
+                style={{
+                  gridTemplateColumns: '1fr 1.6fr 1.9fr 1.5fr 0.6fr 1.2fr',
+                  borderBottom: `1px solid ${T.border}`,
+                  backgroundColor: i % 2 ? 'rgba(200,120,58,0.03)' : 'transparent',
+                }}
+                whileHover={{ backgroundColor: 'rgba(200,120,58,0.055)' }}
+              >
+                <span className="text-[8px] font-bold tracking-wider" style={{ color: T.muted }}>
+                  {order.displayId}
+                </span>
+                <span className="text-[10px]" style={{ color: T.bright }}>
+                  {order.client?.name || '—'}
+                </span>
+                <span className="text-[9px]" style={{ color: '#8A7060' }}>
+                  {order.client?.email || '—'}
+                </span>
+                <span className="text-[9px]" style={{ color: '#8A7060' }}>
+                  {order.client?.phone || '—'}
+                </span>
+                <span className="text-[10px] font-bold text-center" style={{ color: T.bright }}>
+                  {order.items?.reduce((acc, it) => acc + it.qty, 0) || 0}
+                </span>
+                <div>
+                  <select
+                    value={currentStatus}
+                    onChange={(e) => onUpdateStatus(order.displayId, e.target.value)}
+                    className="text-[8px] font-bold tracking-[0.2em] uppercase px-2 py-1 bg-transparent cursor-pointer outline-none border transition-colors duration-150 font-['Poppins']"
+                    style={{ color: s.color, backgroundColor: s.bg, borderColor: `${s.color}40` }}
+                  >
+                    <option value="PENDING" style={{ backgroundColor: T.bg1, color: T.blue.base }}>PENDING</option>
+                    <option value="PROCESSING" style={{ backgroundColor: T.bg1, color: T.amber.base }}>PROCESSING</option>
+                    <option value="DISPATCHED" style={{ backgroundColor: T.bg1, color: T.copper.base }}>DISPATCHED</option>
+                    <option value="CANCELLED" style={{ backgroundColor: T.bg1, color: T.red.base }}>CANCELLED</option>
+                  </select>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -488,13 +517,13 @@ function CorporateContractsView({ contracts }) {
             className="p-5 transition-colors duration-150 cursor-default"
             style={{ border: `1px solid #1A1A1A` }}
             whileHover={{
-              borderColor: '#2E2E2E',
-              backgroundColor: 'rgba(255,184,0,0.022)',
+              borderColor: T.copper.base + '50',
+              backgroundColor: 'rgba(200,120,58,0.05)',
             }}
           >
             <div className="flex items-start justify-between mb-4">
               <div>
-                <span className="text-[8px] tracking-[0.25em] uppercase font-bold" style={{ color: '#383838' }}>
+                <span className="text-[8px] tracking-[0.25em] uppercase font-bold" style={{ color: T.muted }}>
                   {c.displayId}
                 </span>
                 <h3 className="text-sm font-bold mt-0.5 tracking-wide" style={{ color: T.bright }}>
@@ -502,10 +531,10 @@ function CorporateContractsView({ contracts }) {
                 </h3>
               </div>
               <div className="text-right shrink-0 ml-4">
-                <span className="text-xs font-bold tracking-widest" style={{ color: T.amber.base }}>
+                <span className="text-xs font-bold tracking-widest" style={{ color: T.copper.base }}>
                   {c.unitCount.toLocaleString()} UNITS
                 </span>
-                <p className="text-[8px] tracking-widest mt-0.5" style={{ color: '#2E2E2E' }}>
+                <p className="text-[8px] tracking-widest mt-0.5" style={{ color: T.muted }}>
                   MANIFEST PC COUNT
                 </p>
               </div>
@@ -549,8 +578,8 @@ function SidebarNav({ activeTab, onTabChange }) {
             className="relative w-full text-left px-4 py-3 flex items-center gap-3
                        text-[10px] tracking-[0.18em] uppercase font-bold
                        transition-colors duration-150 cursor-pointer border-none bg-transparent"
-            style={{ color: isActive ? T.green.base : T.muted }}
-            onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.color = '#888'; }}
+            style={{ color: isActive ? T.copper.base : T.muted }}
+            onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.color = '#A07060'; }}
             onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.color = T.muted; }}
           >
             {isActive && (
@@ -558,9 +587,9 @@ function SidebarNav({ activeTab, onTabChange }) {
                 layoutId="active-nav-pill"
                 className="absolute inset-0"
                 style={{
-                  backgroundColor: T.green.dim,
-                  borderLeft: `2px solid ${T.green.base}`,
-                  boxShadow: `inset 0 0 24px rgba(74,255,145,0.05), ${T.green.glow.replace('14px', '8px')}`,
+                  backgroundColor: T.copper.dim,
+                  borderLeft: `2px solid ${T.copper.base}`,
+                  boxShadow: `inset 0 0 24px rgba(200,120,58,0.08), 0 0 10px rgba(200,120,58,0.30)`,
                 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 36 }}
               />
@@ -792,6 +821,23 @@ export default function AdminPanel() {
     }
   }, [authenticatedFetch, appendLog, fetchOverviewStats]);
 
+  const handleUpdateOrderStatus = useCallback(async (orderId, newStatus) => {
+    try {
+      appendLog('INFO', `Updating status of order ${orderId} to ${newStatus}...`);
+      await authenticatedFetch(`${API_BASE}/api/orders/${orderId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: newStatus }),
+      });
+      setOrders((prev) =>
+        prev.map((o) => (o.displayId === orderId || o.id === orderId ? { ...o, status: newStatus } : o))
+      );
+      appendLog('OK', `Successfully updated status of order ${orderId} to ${newStatus}.`);
+      fetchOverviewStats();
+    } catch (err) {
+      appendLog('ERROR', `Failed to update order status: ${err.message}`);
+    }
+  }, [authenticatedFetch, appendLog, fetchOverviewStats]);
+
   const openAddModal  = useCallback(() => { setEditingProduct(null); setShowModal(true); }, []);
   const openEditModal = useCallback((p) => { setEditingProduct(p);   setShowModal(true); }, []);
   const closeModal    = useCallback(() => { setShowModal(false); setEditingProduct(null); }, []);
@@ -824,15 +870,20 @@ export default function AdminPanel() {
         onDelete={handleDeleteProduct}
       />
     ),
-    retail:    <RetailSalesView    orders={orders}     />,
+    retail: (
+      <RetailSalesView
+        orders={orders}
+        onUpdateStatus={handleUpdateOrderStatus}
+      />
+    ),
     contracts: <CorporateContractsView contracts={contracts} />,
   };
 
   if (isBooting) {
     return (
       <div
-        className="min-h-screen w-full font-mono flex flex-col items-center justify-center p-6 text-xs uppercase"
-        style={{ backgroundColor: T.bg0, color: T.green.base }}
+        className="min-h-screen w-full font-['Poppins'] flex flex-col items-center justify-center p-6 text-xs uppercase"
+        style={{ backgroundColor: T.bg0, color: T.copper.base }}
       >
         <div className="w-full max-w-sm p-8 rounded-sm text-center" style={{ border: `1px solid ${T.border}`, backgroundColor: T.bg1 }}>
           <motion.div
@@ -842,7 +893,7 @@ export default function AdminPanel() {
           >
             [ SECURE SYSCOMM INITIATION ]
           </motion.div>
-          <div className="mt-4 text-[9px] text-[#444] tracking-widest leading-relaxed">
+          <div className="mt-4 text-[9px] tracking-widest leading-relaxed" style={{ color: T.muted }}>
             establishing secure shell link...<br />
             verifying active console session token...
           </div>
@@ -854,13 +905,13 @@ export default function AdminPanel() {
   if (!isAuthenticated) {
     return (
       <div
-        className="min-h-screen w-full font-mono flex flex-col items-center justify-center p-6"
+        className="min-h-screen w-full font-['Poppins'] flex flex-col items-center justify-center p-6"
         style={{ backgroundColor: T.bg0 }}
       >
         <div className="mb-8 text-center">
           <pre
             className="select-none leading-[1.3]"
-            style={{ fontSize: '9px', letterSpacing: '2px', color: '#1C1C1C' }}
+            style={{ fontSize: '9px', letterSpacing: '2px', color: '#4A3020' }}
           >{`
  ██████╗████████╗███╗   ███╗
  ██╔════╝╚══██╔══╝████╗ ████║
@@ -868,7 +919,7 @@ export default function AdminPanel() {
  ██║   ██║  ██║   ██║╚██╔╝██║
  ╚██████╔╝  ██║   ██║ ╚═╝ ██║
   ╚═════╝   ╚═╝   ╚═╝     ╚═╝`}</pre>
-          <p className="text-[8px] tracking-[0.45em] mt-3 uppercase" style={{ color: '#282828' }}>
+          <p className="text-[8px] tracking-[0.45em] mt-3 uppercase" style={{ color: T.muted }}>
             Gray Textile &amp; Merchandising — Admin Shell v3.0.0
           </p>
         </div>
@@ -878,16 +929,16 @@ export default function AdminPanel() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full max-w-sm p-8 rounded-sm text-center"
+          className="w-full max-w-sm p-8 rounded-sm text-center font-['Poppins']"
           style={{ border: `1px solid ${T.border}`, backgroundColor: T.bg1 }}
         >
           <p
             className="text-[9px] tracking-[0.3em] uppercase font-bold mb-1"
-            style={{ color: T.green.base }}
+            style={{ color: T.copper.base }}
           >
             SECURITY AUTHENTICATION REQUIRED
           </p>
-          <p className="text-[9px] mb-8 tracking-wider leading-relaxed" style={{ color: '#383838' }}>
+          <p className="text-[9px] mb-8 tracking-wider leading-relaxed" style={{ color: T.muted }}>
             Enter operator credentials to unlock<br />the command dashboard.
           </p>
 
@@ -932,15 +983,15 @@ export default function AdminPanel() {
 
           <motion.button
             type="submit"
-            whileHover={{ opacity: 0.88, boxShadow: T.green.glow }}
+            whileHover={{ opacity: 0.88, boxShadow: T.copper.glow }}
             whileTap={{ scale: 0.97 }}
             className="w-full py-3 text-[9px] font-bold tracking-[0.25em] uppercase cursor-pointer border-none transition-shadow duration-200"
-            style={{ backgroundColor: T.green.base, color: T.bg0 }}
+            style={{ backgroundColor: T.copper.base, color: '#0F0D0B' }}
           >
             [ AUTHENTICATE OPERATOR ]
           </motion.button>
 
-          <p className="text-[8px] mt-6 tracking-widest" style={{ color: '#1E1E1E' }}>
+          <p className="text-[8px] mt-6 tracking-widest" style={{ color: '#3A2E24' }}>
             UNAUTHORIZED ACCESS IS PROHIBITED AND MONITORED
           </p>
         </motion.form>
@@ -951,32 +1002,32 @@ export default function AdminPanel() {
   return (
     <>
       <div
-        className="w-full min-h-screen font-mono flex flex-row items-stretch overflow-hidden"
+        className="w-full min-h-screen font-['Poppins'] flex flex-row items-stretch overflow-hidden"
         style={{ backgroundColor: T.bg0, color: T.bright }}
       >
         <aside
           className="w-[280px] flex-shrink-0 p-6 flex flex-col justify-between overflow-y-auto self-stretch"
-          style={{ backgroundColor: T.bg1, borderRight: `1px solid #181818` }}
+          style={{ backgroundColor: T.bg1, borderRight: `1px solid ${T.border}` }}
         >
           <div>
             <div className="mb-8">
               <p
                 className="text-[9px] tracking-[0.3em] uppercase font-bold"
-                style={{ color: T.green.base }}
+                style={{ color: T.copper.base }}
               >
                 GTM // ADMIN SHELL
               </p>
-              <p className="text-[8px] mt-1.5 tracking-widest" style={{ color: '#282828' }}>
+              <p className="text-[8px] mt-1.5 tracking-widest" style={{ color: T.muted }}>
                 {fmtTime(tick)}&nbsp;·&nbsp; OPERATOR ACTIVE
               </p>
-              <div className="mt-4 w-full h-px" style={{ backgroundColor: '#181818' }} />
+              <div className="mt-4 w-full h-px" style={{ backgroundColor: T.border }} />
             </div>
 
             <div
               className="mb-8 p-4"
-              style={{ backgroundColor: T.bg0, border: `1px solid #181818` }}
+              style={{ backgroundColor: T.bg0, border: `1px solid ${T.border}` }}
             >
-              <p className="text-[8px] tracking-[0.25em] uppercase mb-4" style={{ color: '#2E2E2E' }}>
+              <p className="text-[8px] tracking-[0.25em] uppercase mb-4" style={{ color: T.muted }}>
                 SKU INVENTORY DEPTH
               </p>
               <div className="space-y-3">
@@ -987,12 +1038,12 @@ export default function AdminPanel() {
                   { label: 'Total Active SKUs',  val: stats.skus.total                          },
                 ].map(({ label, val }) => (
                   <div key={label} className="flex items-center justify-between">
-                    <span className="text-[9px] tracking-wide" style={{ color: '#383838' }}>
+                    <span className="text-[9px] tracking-wide" style={{ color: '#8A7060' }}>
                       {label}
                     </span>
                     <span
                       className="text-[10px] font-bold tabular-nums"
-                      style={{ color: label === 'Total Active SKUs' ? T.green.base : T.bright }}
+                      style={{ color: label === 'Total Active SKUs' ? T.copper.base : T.bright }}
                     >
                       {String(val).padStart(3, '0')}
                     </span>
@@ -1002,7 +1053,7 @@ export default function AdminPanel() {
             </div>
 
             <div>
-              <p className="text-[8px] tracking-[0.25em] uppercase mb-4" style={{ color: '#2E2E2E' }}>
+              <p className="text-[8px] tracking-[0.25em] uppercase mb-4" style={{ color: T.muted }}>
                 OPERATIONS MODULES
               </p>
               <SidebarNav activeTab={activeTab} onTabChange={setActiveTab} />
@@ -1010,23 +1061,23 @@ export default function AdminPanel() {
           </div>
 
           <div className="mt-6">
-            <p className="text-[8px] tracking-[0.25em] uppercase mb-2" style={{ color: '#2E2E2E' }}>
+            <p className="text-[8px] tracking-[0.25em] uppercase mb-2" style={{ color: T.muted }}>
               LIVE SYSTEM LOG
             </p>
             <div
               ref={logContainerRef}
               className="p-2.5 h-36 overflow-y-auto space-y-1"
-              style={{ backgroundColor: T.bg0, border: `1px solid #181818` }}
+              style={{ backgroundColor: T.bg0, border: `1px solid ${T.border}` }}
             >
               {logs.map((log, i) => (
                 <div key={i} className="flex gap-2 items-start text-[7.5px] leading-relaxed">
-                  <span className="shrink-0 tracking-wider tabular-nums" style={{ color: '#282828' }}>
+                  <span className="shrink-0 tracking-wider tabular-nums" style={{ color: T.muted }}>
                     {log.ts}
                   </span>
                   <span className="shrink-0 font-bold" style={{ color: LOG_COLOR[log.level] ?? T.bright }}>
                     {log.level}
                   </span>
-                  <span className="break-all" style={{ color: '#444' }}>
+                  <span className="break-all" style={{ color: '#8A7060' }}>
                     {log.msg}
                   </span>
                 </div>
@@ -1035,13 +1086,13 @@ export default function AdminPanel() {
 
             <motion.button
               onClick={handleLogout}
-              whileHover={{ backgroundColor: 'rgba(255,68,68,0.16)' }}
+              whileHover={{ backgroundColor: 'rgba(196,80,58,0.18)' }}
               whileTap={{ scale: 0.98 }}
               className="w-full mt-3 py-2 text-[8px] tracking-[0.2em] uppercase font-bold cursor-pointer transition-colors duration-150"
               style={{
                 backgroundColor: T.red.dim,
                 color: T.red.base,
-                border: `1px solid ${T.red.base}30`,
+                border: `1px solid ${T.red.base}40`,
               }}
             >
               [ TERMINATE SESSION ]
@@ -1055,31 +1106,30 @@ export default function AdminPanel() {
         >
           <div
             className="flex items-start justify-between mb-12 pb-8"
-            style={{ borderBottom: `1px solid #141414` }}
+            style={{ borderBottom: `1px solid ${T.border}` }}
           >
             <div className="min-w-0">
-              <p className="text-[10px] tracking-[0.4em] uppercase mb-3" style={{ color: '#282828' }}>
+              <p className="text-[10px] tracking-[0.4em] uppercase mb-3" style={{ color: T.muted }}>
                 GTM ADMIN // {activeTabMeta?.label}
               </p>
               <h1
-                className="font-serif text-lg sm:text-xl md:text-2xl tracking-[0.25em] uppercase font-semibold
-                           whitespace-nowrap mb-0 block pb-4"
-                style={{ color: '#FAF7F2', borderBottom: `1px solid #222` }}
+                className="text-lg sm:text-xl md:text-2xl tracking-[0.18em] uppercase font-semibold font-['Poppins'] whitespace-nowrap mb-0 block pb-4"
+                style={{ color: T.bright, borderBottom: `1px solid ${T.border}` }}
               >
                 {activeTabMeta?.title}
               </h1>
             </div>
             <div className="text-right shrink-0 ml-8">
-              <p className="text-[9px] tracking-widest" style={{ color: '#282828' }}>
+              <p className="text-[9px] tracking-widest" style={{ color: T.muted }}>
                 {new Date().toDateString().toUpperCase()}
               </p>
               <p
-                className="text-sm font-bold mt-1.5 tracking-wider font-mono tabular-nums"
-                style={{ color: T.green.base }}
+                className="text-sm font-bold mt-1.5 tracking-wider font-['Poppins'] tabular-nums"
+                style={{ color: T.copper.base }}
               >
                 {fmtTime(tick)}
               </p>
-              <p className="text-[9px] mt-1 tracking-widest" style={{ color: '#282828' }}>
+              <p className="text-[9px] mt-1 tracking-widest" style={{ color: T.muted }}>
                 SESSION LIVE
               </p>
             </div>

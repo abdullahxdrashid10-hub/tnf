@@ -1,12 +1,13 @@
 // server/src/controllers/contracts.controller.ts
-import type { FastifyRequest, FastifyReply } from 'fastify';
+import type { FastifyReply } from 'fastify';
 import { z } from 'zod';
-import type { ContractStatus } from '@prisma/client';
+import { Prisma, type ContractStatus } from '@prisma/client';
 import { prisma } from '../plugins/db.js';
 import { serializeForAudit } from '../lib/audit.js';
 import { nextContractDisplayId } from '../lib/ids.js';
 import { toPrismaPagination, paginate } from '../lib/pagination.js';
 import { NotFoundError } from '../lib/errors.js';
+import type { ZodRequest } from '../lib/fastifyTypes.js';
 
 // ── Zod schemas ───────────────────────────────────────────────────────────────
 
@@ -37,7 +38,7 @@ export const ContractIdParam = z.object({ id: z.string().min(1) });
 // ── Handlers ─────────────────────────────────────────────────────────────────
 
 export async function listContracts(
-  request: FastifyRequest<{ Querystring: z.infer<typeof ListContractsQuery> }>,
+  request: ZodRequest<{ Querystring: z.infer<typeof ListContractsQuery> }>,
   reply: FastifyReply,
 ) {
   const { status, page, limit } = request.query;
@@ -62,7 +63,7 @@ export async function listContracts(
 }
 
 export async function getContract(
-  request: FastifyRequest<{ Params: z.infer<typeof ContractIdParam> }>,
+  request: ZodRequest<{ Params: z.infer<typeof ContractIdParam> }>,
   reply: FastifyReply,
 ) {
   const contract = await prisma.contract.findFirst({
@@ -79,7 +80,7 @@ export async function getContract(
 }
 
 export async function createContract(
-  request: FastifyRequest<{ Body: z.infer<typeof CreateContractBody> }>,
+  request: ZodRequest<{ Body: z.infer<typeof CreateContractBody> }>,
   reply: FastifyReply,
 ) {
   const displayId = await nextContractDisplayId();
@@ -92,7 +93,7 @@ export async function createContract(
 }
 
 export async function updateContract(
-  request: FastifyRequest<{
+  request: ZodRequest<{
     Params: z.infer<typeof ContractIdParam>;
     Body:   z.infer<typeof UpdateContractBody>;
   }>,
@@ -118,7 +119,7 @@ export async function updateContract(
 }
 
 export async function deactivateContract(
-  request: FastifyRequest<{ Params: z.infer<typeof ContractIdParam> }>,
+  request: ZodRequest<{ Params: z.infer<typeof ContractIdParam> }>,
   reply: FastifyReply,
 ) {
   const contract = await prisma.contract.findFirst({
@@ -146,7 +147,7 @@ export async function deactivateContract(
         resourceType: 'Contract',
         resourceId:   contract.id,
         previousJson: contractSnapshot,
-        nextJson:     null,
+        nextJson:     Prisma.JsonNull,
         ip:           request.ip,
       },
     }),

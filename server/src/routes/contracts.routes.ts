@@ -1,5 +1,6 @@
 // server/src/routes/contracts.routes.ts
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
+import type { z } from 'zod';
 import { verifyJWT } from '../middleware/verifyJWT.js';
 import { requireRole } from '../middleware/requireRole.js';
 import * as ctrl from '../controllers/contracts.controller.js';
@@ -8,21 +9,21 @@ const contractRoutes: FastifyPluginAsyncZod = async (fastify) => {
   fastify.addHook('preHandler', verifyJWT);
 
   // ── GET /api/contracts ────────────────────────────────────────────────────
-  fastify.get(
+  fastify.get<{ Querystring: z.infer<typeof ctrl.ListContractsQuery> }>(
     '/',
     { schema: { querystring: ctrl.ListContractsQuery } },
     ctrl.listContracts,
   );
 
   // ── GET /api/contracts/:id ────────────────────────────────────────────────
-  fastify.get(
+  fastify.get<{ Params: z.infer<typeof ctrl.ContractIdParam> }>(
     '/:id',
     { schema: { params: ctrl.ContractIdParam } },
     ctrl.getContract,
   );
 
   // ── POST /api/contracts ───────────────────────────────────────────────────
-  fastify.post(
+  fastify.post<{ Body: z.infer<typeof ctrl.CreateContractBody> }>(
     '/',
     {
       schema:     { body: ctrl.CreateContractBody },
@@ -32,7 +33,10 @@ const contractRoutes: FastifyPluginAsyncZod = async (fastify) => {
   );
 
   // ── PATCH /api/contracts/:id ──────────────────────────────────────────────
-  fastify.patch(
+  fastify.patch<{
+    Params: z.infer<typeof ctrl.ContractIdParam>;
+    Body:   z.infer<typeof ctrl.UpdateContractBody>;
+  }>(
     '/:id',
     {
       schema: {
@@ -45,7 +49,7 @@ const contractRoutes: FastifyPluginAsyncZod = async (fastify) => {
   );
 
   // ── DELETE /api/contracts/:id — SOFT DELETE ───────────────────────────────
-  fastify.delete(
+  fastify.delete<{ Params: z.infer<typeof ctrl.ContractIdParam> }>(
     '/:id',
     {
       schema:     { params: ctrl.ContractIdParam },

@@ -147,25 +147,27 @@ enum OrderStatus {
 }
 
 model Client {
-  id        String        @id @default(cuid())
-  fullName  String
-  email     String        @unique
-  phone     String?
-  createdAt DateTime      @default(now())
-  orders    RetailOrder[]
+  id          String        @id @default(cuid())
+  fullName    String
+  companyName String?       // buyer's company — populated by public /quote endpoint
+  email       String        @unique
+  phone       String?
+  createdAt   DateTime      @default(now())
+  orders      RetailOrder[]
 
   @@index([email])
 }
 
 model RetailOrder {
-  id        String      @id @default(cuid())           // internal PK
-  displayId String      @unique                         // e.g. "ORD-0091" — server-generated
-  clientId  String
-  client    Client      @relation(fields: [clientId], references: [id])
-  status    OrderStatus @default(PENDING)
-  placedAt  DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  items     OrderItem[]
+  id             String      @id @default(cuid())           // internal PK
+  displayId      String      @unique                         // e.g. "ORD-0091" — server-generated
+  clientId       String
+  client         Client      @relation(fields: [clientId], references: [id])
+  status         OrderStatus @default(PENDING)
+  deliveryWindow String?     // buyer's requested delivery window — from public /quote
+  placedAt       DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  items          OrderItem[]
 
   @@index([status])
   @@index([clientId])
@@ -181,6 +183,7 @@ model OrderItem {
   // onDelete: Restrict (default) — correct. Prevents hard-deleting a product
   // that has order history. Soft-delete (isActive=false) is used instead.
   product   Product     @relation(fields: [productId], references: [id])
+  colorName String?     // buyer's selected finish, e.g. "Navy Blue" — nullable, set by the public quote endpoint
   qty       Int
   unitPrice Decimal     @db.Decimal(10, 2)
 
@@ -224,3 +227,4 @@ model Contract {
   @@index([companyName])
   @@index([createdAt])
 }
+

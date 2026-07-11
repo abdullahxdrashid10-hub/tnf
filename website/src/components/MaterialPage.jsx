@@ -3,7 +3,38 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { catalogData, getProductColorImage } from './CatalogData';
 import { useCart } from './CartContext';
-import TryOnModal from './TryOnModal';
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+
+const DB_CATEGORY_MAP = {
+  APPAREL:          'Apparel',
+  UNIFORM_WORKWEAR: 'Uniform & Workwear',
+  SPORTSWEAR:       'Sportswear',
+};
+
+function normalizeProduct(dbProduct) {
+  const humanCategory = DB_CATEGORY_MAP[dbProduct.category] || dbProduct.category;
+  const catalog = catalogData.find(
+    (c) => c.name === dbProduct.name && c.subCategory === dbProduct.subCategory,
+  );
+  const standardColors = dbProduct.colors.map((c) => c.colorName);
+  return {
+    dbId:           dbProduct.id,
+    id:             dbProduct.id,
+    name:           dbProduct.name,
+    category:       humanCategory,
+    subCategory:    dbProduct.subCategory,
+    price:          `$${Number(dbProduct.priceUsd).toFixed(2)}`,
+    priceUsd:       Number(dbProduct.priceUsd),
+    standardColors: standardColors.length > 0
+      ? standardColors
+      : ['Navy Blue', 'Black', 'Burgundy', 'White', 'Grey'],
+    colorImages:    catalog?.colorImages || {},
+    image:          catalog?.image       || `https://picsum.photos/seed/${encodeURIComponent(dbProduct.localImageName || dbProduct.name)}/400/300`,
+    description:    catalog?.description || '',
+  };
+}
+
 
 // ─── Color swatch hex map (mirrors CollectionPage palette) ────────────────────
 const COLOR_MAP = {
@@ -52,11 +83,25 @@ const MaterialPage = () => {
     window.scrollTo(0, 0);
   }, [materialType]);
 
-  // ── Try-On modal state ────────────────────────────────────────────────────
-  const [isTryOnOpen,          setIsTryOnOpen]          = useState(false);
-  const [selectedTryOnProduct, setSelectedTryOnProduct] = useState(null);
+  // ── Live products fetched from DB ────────────────────────────────────
+  const [allProducts, setAllProducts] = useState(catalogData);
+  const [isLoading, setIsLoading]     = useState(true);
 
-  // ── URL param → dataset category label ───────────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_BASE}/api/public/products`)
+      .then((r) => r.json())
+      .then((json) => {
+        if (cancelled) return;
+        const normalized = (json.data || []).map(normalizeProduct);
+        if (normalized.length > 0) setAllProducts(normalized);
+      })
+      .catch(() => { /* keep catalogData fallback */ })
+      .finally(() => { if (!cancelled) setIsLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  // ── URL param → dataset category label ──────────────────────────────
   const getMappedCategory = (type) => {
     const lower = type.toLowerCase();
     if (lower === 'apparel') return 'Apparel';
@@ -67,7 +112,7 @@ const MaterialPage = () => {
 
   const targetCategory = getMappedCategory(materialType);
 
-  const activeItems = catalogData.filter(
+  const activeItems = allProducts.filter(
     (item) => item.category.toLowerCase() === targetCategory.toLowerCase()
   );
 
@@ -132,10 +177,6 @@ const MaterialPage = () => {
                   <ProductCard
                     key={product.id}
                     product={product}
-                    onTryOn={() => {
-                      setSelectedTryOnProduct(product);
-                      setIsTryOnOpen(true);
-                    }}
                   />
                 ))}
             </div>
@@ -144,13 +185,6 @@ const MaterialPage = () => {
 
       </div>
 
-      {/* ── Try-On Modal Portal ────────────────────────────────────────────── */}
-      <TryOnModal
-        isOpen={isTryOnOpen}
-        onClose={() => setIsTryOnOpen(false)}
-        product={selectedTryOnProduct}
-      />
-
     </section>
   );
 };
@@ -158,7 +192,7 @@ const MaterialPage = () => {
 // ─────────────────────────────────────────────────────────────────────────────
 // ProductCard — dark charcoal theme, aligned to CollectionPage
 // ─────────────────────────────────────────────────────────────────────────────
-const ProductCard = ({ product, onTryOn }) => {
+const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
 
   const [selectedColor, setSelectedColor] = useState(
@@ -345,14 +379,7 @@ const ProductCard = ({ product, onTryOn }) => {
           className="mt-auto pt-4 flex flex-col gap-2"
           style={{ borderTop: '1px solid rgba(184,115,51,0.08)' }}
         >
-          {/* Virtual Matrix Try-On trigger */}
-          <button
-            type="button"
-            onClick={onTryOn}
-            className="border border-[#B87333]/30 text-[#B87333] hover:bg-[#B87333]/5 text-[9px] uppercase tracking-[0.2em] py-2 px-4 rounded-sm font-bold transition-all duration-200 w-full text-center cursor-pointer"
-          >
-            VIRTUAL MATRIX TRY-ON
-          </button>
+
 
           {/* Add to Batch Order */}
           <motion.button

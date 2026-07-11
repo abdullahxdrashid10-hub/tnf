@@ -1,11 +1,16 @@
 // server/src/controllers/products.controller.ts
-import type { FastifyRequest, FastifyReply } from 'fastify';
+import type { FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { Prisma, type ProductCategory } from '@prisma/client';
 import { prisma } from '../plugins/db.js';
 import { serializeForAudit, writeAuditLog } from '../lib/audit.js';
 import { toPrismaPagination, paginate } from '../lib/pagination.js';
 import { NotFoundError } from '../lib/errors.js';
+import type { ZodRequest } from '../lib/fastifyTypes.js';
+
+type ProductListItem = Prisma.ProductGetPayload<{
+  include: { colors: { select: { colorName: true } } };
+}>;
 
 // ── Zod schemas ───────────────────────────────────────────────────────────────
 
@@ -35,19 +40,19 @@ export const ProductIdParam = z.object({
 // ── Handlers ─────────────────────────────────────────────────────────────────
 
 export async function listProducts(
-  request: FastifyRequest<{ Querystring: z.infer<typeof ListProductsQuery> }>,
+  request: ZodRequest<{ Querystring: z.infer<typeof ListProductsQuery> }>,
   reply: FastifyReply,
 ) {
   const { category, search, page, limit } = request.query;
   const { skip, take } = toPrismaPagination({ page, limit });
 
-  let products;
+  let products: ProductListItem[];
   let total: number;
 
   if (search) {
     // pg_trgm ILIKE — uses GIN indexes, NOT a sequential scan
     const pattern = `%${search}%`;
-    products = await prisma.$queryRaw<typeof products>`
+    products = await prisma.$queryRaw<ProductListItem[]>`
       SELECT p.*, COALESCE(
         json_agg(pc."colorName") FILTER (WHERE pc.id IS NOT NULL), '[]'
       ) as colors
@@ -90,7 +95,7 @@ export async function listProducts(
 }
 
 export async function getProduct(
-  request: FastifyRequest<{ Params: z.infer<typeof ProductIdParam> }>,
+  request: ZodRequest<{ Params: z.infer<typeof ProductIdParam> }>,
   reply: FastifyReply,
 ) {
   const product = await prisma.product.findFirst({
@@ -102,7 +107,7 @@ export async function getProduct(
 }
 
 export async function createProduct(
-  request: FastifyRequest<{ Body: z.infer<typeof CreateProductBody> }>,
+  request: ZodRequest<{ Body: z.infer<typeof CreateProductBody> }>,
   reply: FastifyReply,
 ) {
   const { colors, priceUsd, ...rest } = request.body;
@@ -129,7 +134,7 @@ export async function createProduct(
 }
 
 export async function updateProduct(
-  request: FastifyRequest<{
+  request: ZodRequest<{
     Params: z.infer<typeof ProductIdParam>;
     Body:   z.infer<typeof UpdateProductBody>;
   }>,
@@ -172,7 +177,7 @@ export async function updateProduct(
 }
 
 export async function deactivateProduct(
-  request: FastifyRequest<{ Params: z.infer<typeof ProductIdParam> }>,
+  request: ZodRequest<{ Params: z.infer<typeof ProductIdParam> }>,
   reply: FastifyReply,
 ) {
   const product = await prisma.product.findFirst({
@@ -196,7 +201,7 @@ export async function deactivateProduct(
         resourceType: 'Product',
         resourceId:   String(product.id),
         previousJson: productSnapshot,
-        nextJson:     null,
+        nextJson:     Prisma.JsonNull,
         ip:           request.ip,
       },
     }),

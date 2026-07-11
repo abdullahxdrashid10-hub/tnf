@@ -1,11 +1,13 @@
 // server/src/controllers/orders.controller.ts
-import type { FastifyRequest, FastifyReply } from 'fastify';
+import type { FastifyReply } from 'fastify';
 import { z } from 'zod';
 import type { OrderStatus } from '@prisma/client';
 import { prisma } from '../plugins/db.js';
 import { nextOrderDisplayId } from '../lib/ids.js';
 import { toPrismaPagination, paginate } from '../lib/pagination.js';
 import { NotFoundError, BadRequestError } from '../lib/errors.js';
+import type { ZodRequest } from '../lib/fastifyTypes.js';
+import { sendOrderStatusUpdateEmail } from '../lib/email.js';
 
 // ── Zod schemas (exported — consumed by orders.routes.ts) ────────────────────
 
@@ -38,7 +40,7 @@ export const OrderIdParam = z.object({ id: z.string().min(1) });
 
 // ── Prisma include shape (reused in all handlers) ─────────────────────────────
 const ORDER_INCLUDE = {
-  client: { select: { fullName: true, email: true, phone: true } },
+  client: { select: { fullName: true, companyName: true, email: true, phone: true } },
   items:  { select: { qty: true, productId: true, unitPrice: true } },
 } as const;
 
@@ -46,18 +48,25 @@ const ORDER_INCLUDE = {
 // totalQty computed here via reduce — no denormalised column on RetailOrder.
 // Prisma issues exactly 2 SQL statements for ORDER_INCLUDE, not N+1.
 type RawOrder = Awaited<ReturnType<typeof prisma.retailOrder.findFirstOrThrow>> & {
-  client: { fullName: string; email: string; phone: string | null };
+  client: { fullName: string; companyName: string | null; email: string; phone: string | null };
   items:  { qty: number; productId: number; unitPrice: { toString(): string } }[];
 };
 
+// Shape order for API response — matches what AdminPanel.jsx reads:
+// order.displayId, order.client?.{name,email,phone}, order.items?.reduce()
 function shapeOrder(order: RawOrder) {
   return {
-    id:        order.displayId,
-    internalId:order.id,
-    client:    order.client.fullName,
-    email:     order.client.email,
-    phone:     order.client.phone,
-    qty:       order.items.reduce((sum, item) => sum + item.qty, 0),
+    id:            order.displayId,          // used as React key
+    displayId:     order.displayId,          // rendered directly in order row
+    internalId:    order.id,
+    client: {
+      name:        order.client.fullName,    // order.client?.name
+      companyName: order.client.companyName, // bonus info
+      email:       order.client.email,       // order.client?.email
+      phone:       order.client.phone,       // order.client?.phone
+    },
+    items:     order.items,                  // order.items?.reduce((acc, it) => acc + it.qty, 0)
+    qty:       order.items.reduce((sum, item) => sum + item.qty, 0), // backward-compat
     status:    order.status,
     placedAt:  order.placedAt,
     updatedAt: order.updatedAt,
@@ -67,7 +76,7 @@ function shapeOrder(order: RawOrder) {
 // ── Handlers ─────────────────────────────────────────────────────────────────
 
 export async function listOrders(
-  request: FastifyRequest<{ Querystring: z.infer<typeof ListOrdersQuery> }>,
+  request: ZodRequest<{ Querystring: z.infer<typeof ListOrdersQuery> }>,
   reply: FastifyReply,
 ) {
   const { status, clientId, from, to, page, limit } = request.query;
@@ -101,7 +110,7 @@ export async function listOrders(
 }
 
 export async function getOrder(
-  request: FastifyRequest<{ Params: z.infer<typeof OrderIdParam> }>,
+  request: ZodRequest<{ Params: z.infer<typeof OrderIdParam> }>,
   reply: FastifyReply,
 ) {
   // Accept either the displayId ("ORD-0091") or the internal cuid PK
@@ -119,7 +128,7 @@ export async function getOrder(
 }
 
 export async function createOrder(
-  request: FastifyRequest<{ Body: z.infer<typeof CreateOrderBody> }>,
+  request: ZodRequest<{ Body: z.infer<typeof CreateOrderBody> }>,
   reply: FastifyReply,
 ) {
   const { clientId, items } = request.body;
@@ -165,7 +174,7 @@ export async function createOrder(
 }
 
 export async function updateOrderStatus(
-  request: FastifyRequest<{
+  request: ZodRequest<{
     Params: z.infer<typeof OrderIdParam>;
     Body:   z.infer<typeof UpdateOrderStatusBody>;
   }>,
@@ -187,5 +196,12 @@ export async function updateOrderStatus(
     include: ORDER_INCLUDE,
   });
 
-  return reply.status(200).send(shapeOrder(updated as RawOrder));
+  const shaped = shapeOrder(updated as RawOrder);
+
+  // Trigger fire-and-forget status update email
+  sendOrderStatusUpdateEmail(shaped, request.body.status).catch((err) =>
+    console.error('Status update email trigger failed:', err)
+  );
+
+  return reply.status(200).send(shaped);
 }

@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from './CartContext';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+
 // ─── Bulk tier presets ────────────────────────────────────────────────────────
 const BULK_TIERS = [
   { label: '250 Units',   qty: 250,  discount: false },
@@ -273,36 +275,66 @@ function CartItemRow({ item, onUpdate, onRemove }) {
 const CheckoutPage = () => {
   const { cart, updateQuantity, removeFromCart, clearCart } = useCart();
 
-  // State for controlling the quotation receipt workflow simulation
+  // State for controlling the quotation receipt workflow
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [generatedManifest, setGeneratedManifest] = useState(null);
+  const [isSubmitting,     setIsSubmitting]     = useState(false);
+  const [submitError,      setSubmitError]      = useState('');
 
-  // Form submission handler processing raw configurations into corporate leads
-  const handleQuotationSubmit = (e) => {
+  // Form submission — posts to real backend, creates a live PENDING order
+  const handleQuotationSubmit = async (e) => {
     e.preventDefault();
-    
-    const company = e.target.elements.companyName.value;
-    const email = e.target.elements.email.value;
-    const timeline = e.target.elements.deliveryWindow.value;
+    const form = e.target.elements;
+    const companyName    = form.companyName.value.trim();
+    const repName        = form.repName.value.trim();
+    const email          = form.email.value.trim();
+    const deliveryWindow = form.deliveryWindow.value.trim();
 
-    if (!company || !email) {
-      alert("Please authenticate company credentials before dispatching.");
+    if (!companyName || !repName || !email) {
+      setSubmitError('Please fill in all required fields before dispatching.');
       return;
     }
 
-    // Capture state copy before purging cart context parameters
-    const confirmationDetails = {
-      orderId: `RFQ-${Math.floor(100000 + Math.random() * 900000)}`,
-      trackingNumber: `GRY-${Math.floor(10000000 + Math.random() * 90000000).toString(16).toUpperCase()}`,
-      company,
-      email,
-      timeline,
-      items: [...cart]
-    };
+    // Build items array — uses dbId (real DB product ID) stored on each cart item
+    const items = cart.map((item) => ({
+      productId: item.dbId ?? item.id,          // dbId from live fetch; id as fallback
+      colorName: item.selectedColor || 'Black',
+      qty:       item.quantity,
+    }));
 
-    setGeneratedManifest(confirmationDetails);
-    setShowSuccessModal(true);
-    clearCart(); // Resets local cache tracking seamlessly
+    setIsSubmitting(true);
+    setSubmitError('');
+
+    try {
+      const res = await fetch(`${API_BASE}/api/public/quote`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyName, fullName: repName, email, deliveryWindow, items }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Submission failed. Please try again.');
+      }
+
+      const confirmationDetails = {
+        orderId:        data.orderId,
+        trackingNumber: data.trackingNumber,
+        company:        companyName,
+        email,
+        deliveryWindow,
+        items: [...cart],
+      };
+
+      setGeneratedManifest(confirmationDetails);
+      setShowSuccessModal(true);
+      clearCart();
+    } catch (err) {
+      setSubmitError(err.message || 'Network error. Please check your connection.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -343,6 +375,7 @@ const CheckoutPage = () => {
               ))
             )}
           </div>
+
           {/* Right Dispatch Card Panel */}
           <div className="bg-[#222222] p-8 border border-[#B87333]/10 rounded-sm shadow-xl">
             <h2 className="text-xl font-serif text-[#FFFFFF] tracking-wide mb-8">
@@ -352,12 +385,12 @@ const CheckoutPage = () => {
             <form className="space-y-6" onSubmit={handleQuotationSubmit}>
               <div>
                 <label className="block text-[8px] uppercase tracking-widest text-[#B87333] font-bold mb-2">
-                  Corporate Identity
+                  Corporate Identity *
                 </label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="companyName"
-                  placeholder="Company Name Ltd." 
+                  placeholder="Company Name Ltd."
                   className="w-full bg-transparent border-b border-[#FAF7F2]/15 py-2 text-sm text-[#FAF7F2] tracking-wide placeholder-[#FAF7F2]/20 focus:outline-none focus:border-[#B87333] transition-colors"
                   required
                 />
@@ -365,12 +398,25 @@ const CheckoutPage = () => {
 
               <div>
                 <label className="block text-[8px] uppercase tracking-widest text-[#B87333] font-bold mb-2">
-                  Representative Email
+                  Representative Full Name *
                 </label>
-                <input 
-                  type="email" 
+                <input
+                  type="text"
+                  name="repName"
+                  placeholder="Your Full Name"
+                  className="w-full bg-transparent border-b border-[#FAF7F2]/15 py-2 text-sm text-[#FAF7F2] tracking-wide placeholder-[#FAF7F2]/20 focus:outline-none focus:border-[#B87333] transition-colors"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[8px] uppercase tracking-widest text-[#B87333] font-bold mb-2">
+                  Representative Email *
+                </label>
+                <input
+                  type="email"
                   name="email"
-                  placeholder="procurement@company.com" 
+                  placeholder="procurement@company.com"
                   className="w-full bg-transparent border-b border-[#FAF7F2]/15 py-2 text-sm text-[#FAF7F2] tracking-wide placeholder-[#FAF7F2]/20 focus:outline-none focus:border-[#B87333] transition-colors"
                   required
                 />
@@ -380,21 +426,36 @@ const CheckoutPage = () => {
                 <label className="block text-[8px] uppercase tracking-widest text-[#B87333] font-bold mb-2">
                   Target Delivery Window
                 </label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="deliveryWindow"
-                  placeholder="Q3 Production Slot / Flexible" 
+                  placeholder="Q3 Production Slot / Flexible"
                   className="w-full bg-transparent border-b border-[#FAF7F2]/15 py-2 text-sm text-[#FAF7F2] tracking-wide placeholder-[#FAF7F2]/20 focus:outline-none focus:border-[#B87333] transition-colors"
                 />
               </div>
 
+              {/* Error feedback */}
+              <AnimatePresence>
+                {submitError && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="text-[10px] tracking-wide"
+                    style={{ color: '#ef4444' }}
+                  >
+                    {submitError}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+
               <div className="pt-6">
-                <button 
-                  type="submit" 
-                  disabled={!cart || cart.length === 0}
+                <button
+                  type="submit"
+                  disabled={!cart || cart.length === 0 || isSubmitting}
                   className="w-full bg-[#B87333] hover:bg-[#A05A22] disabled:bg-neutral-700 disabled:text-neutral-500 text-[#1A1A1A] font-bold uppercase text-[10px] tracking-[0.25em] py-4 transition-colors duration-300 rounded-xs cursor-pointer"
                 >
-                  Proceed to Get Quotation
+                  {isSubmitting ? 'Dispatching...' : 'Proceed to Get Quotation'}
                 </button>
               </div>
             </form>

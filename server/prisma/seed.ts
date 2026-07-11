@@ -1,16 +1,12 @@
 // server/prisma/seed.ts
 // ─────────────────────────────────────────────────────────────────────────────
-// Seeds the GTM database from CatalogData.js + mock retail/contract data.
+// Seeds the GTM database. CATALOG is kept in sync with CatalogData.js (65 items).
 // Run with: npm run db:seed
 // ─────────────────────────────────────────────────────────────────────────────
 import { PrismaClient, ProductCategory } from '@prisma/client';
 import { hashPassword } from '../src/lib/password.js';
 
 const prisma = new PrismaClient();
-
-// ── Inline catalog data ───────────────────────────────────────────────────────
-// Sourced from website/src/components/CatalogData.js
-// Prices are stored as numbers (strip the "$" that the frontend uses)
 
 type SeedProduct = {
   name:          string;
@@ -21,61 +17,91 @@ type SeedProduct = {
   colors:        string[];
 };
 
+const SEED_COLORS = ['Navy Blue', 'Black', 'Burgundy', 'White', 'Grey'];
+
+// ── CATALOG — 65 products, mirrored 1-to-1 from website/src/components/CatalogData.js ──
+
 const CATALOG: SeedProduct[] = [
-  // ── APPAREL ──────────────────────────────────────────────────────────────
-  { name: 'Classic Cotton Tee', category: 'APPAREL', subCategory: 'T-Shirts', priceUsd: 19.99, localImageName: 'classic-cotton-tee.jpg', colors: ['White', 'Black', 'Navy', 'Grey'] },
-  { name: 'Premium Polo Shirt', category: 'APPAREL', subCategory: 'Polo Shirts', priceUsd: 34.99, localImageName: 'premium-polo.jpg', colors: ['White', 'Navy', 'Royal Blue', 'Black'] },
-  { name: 'Slim Fit Dress Shirt', category: 'APPAREL', subCategory: 'Dress Shirts', priceUsd: 49.99, localImageName: 'slim-fit-dress-shirt.jpg', colors: ['White', 'Light Blue', 'Grey'] },
-  { name: 'Casual Hoodie', category: 'APPAREL', subCategory: 'Hoodies', priceUsd: 44.99, localImageName: 'casual-hoodie.jpg', colors: ['Black', 'Grey', 'Navy', 'Burgundy'] },
-  { name: 'Full Zip Sweatshirt', category: 'APPAREL', subCategory: 'Sweatshirts', priceUsd: 39.99, localImageName: 'full-zip-sweatshirt.jpg', colors: ['Black', 'Charcoal', 'Navy'] },
-  { name: 'Graphic Print Tee', category: 'APPAREL', subCategory: 'T-Shirts', priceUsd: 24.99, localImageName: 'graphic-print-tee.jpg', colors: ['White', 'Black', 'Ash'] },
-  { name: 'V-Neck Cotton Tee', category: 'APPAREL', subCategory: 'T-Shirts', priceUsd: 22.99, localImageName: 'v-neck-tee.jpg', colors: ['White', 'Black', 'Heather Grey'] },
-  { name: 'Pique Polo', category: 'APPAREL', subCategory: 'Polo Shirts', priceUsd: 29.99, localImageName: 'pique-polo.jpg', colors: ['White', 'Black', 'Red', 'Navy'] },
-  { name: 'Oxford Button-Down', category: 'APPAREL', subCategory: 'Dress Shirts', priceUsd: 54.99, localImageName: 'oxford-button-down.jpg', colors: ['White', 'Blue', 'Pink'] },
-  { name: 'Pullover Hoodie', category: 'APPAREL', subCategory: 'Hoodies', priceUsd: 42.99, localImageName: 'pullover-hoodie.jpg', colors: ['Black', 'Grey', 'Navy', 'Forest Green'] },
-  { name: 'Crew Neck Sweatshirt', category: 'APPAREL', subCategory: 'Sweatshirts', priceUsd: 37.99, localImageName: 'crew-neck-sweatshirt.jpg', colors: ['Charcoal', 'Navy', 'Maroon'] },
-  { name: 'Long Sleeve Tee', category: 'APPAREL', subCategory: 'T-Shirts', priceUsd: 27.99, localImageName: 'long-sleeve-tee.jpg', colors: ['White', 'Black', 'Navy'] },
-  { name: 'Performance Polo', category: 'APPAREL', subCategory: 'Polo Shirts', priceUsd: 39.99, localImageName: 'performance-polo.jpg', colors: ['White', 'Black', 'Royal'] },
-  { name: 'Chambray Shirt', category: 'APPAREL', subCategory: 'Dress Shirts', priceUsd: 47.99, localImageName: 'chambray-shirt.jpg', colors: ['Blue', 'Grey'] },
-  { name: 'Zip-Up Fleece Hoodie', category: 'APPAREL', subCategory: 'Hoodies', priceUsd: 52.99, localImageName: 'zip-fleece-hoodie.jpg', colors: ['Black', 'Navy', 'Dark Red'] },
-
-  // ── UNIFORM & WORKWEAR ───────────────────────────────────────────────────
-  { name: 'Industrial Work Shirt', category: 'UNIFORM_WORKWEAR', subCategory: 'Work Shirts', priceUsd: 44.99, localImageName: 'industrial-work-shirt.jpg', colors: ['Navy', 'Grey', 'Khaki'] },
-  { name: 'Hi-Vis Safety Vest', category: 'UNIFORM_WORKWEAR', subCategory: 'Safety Wear', priceUsd: 24.99, localImageName: 'hi-vis-vest.jpg', colors: ['Yellow', 'Orange'] },
-  { name: 'Cargo Work Pants', category: 'UNIFORM_WORKWEAR', subCategory: 'Work Pants', priceUsd: 59.99, localImageName: 'cargo-work-pants.jpg', colors: ['Navy', 'Khaki', 'Black'] },
-  { name: 'Chef Coat', category: 'UNIFORM_WORKWEAR', subCategory: 'Chef Wear', priceUsd: 34.99, localImageName: 'chef-coat.jpg', colors: ['White', 'Black'] },
-  { name: 'Mechanic Coverall', category: 'UNIFORM_WORKWEAR', subCategory: 'Coveralls', priceUsd: 79.99, localImageName: 'mechanic-coverall.jpg', colors: ['Navy', 'Grey', 'Dark Green'] },
-  { name: 'Security Guard Shirt', category: 'UNIFORM_WORKWEAR', subCategory: 'Security Wear', priceUsd: 39.99, localImageName: 'security-shirt.jpg', colors: ['Black', 'Navy'] },
-  { name: 'Hospitality Apron', category: 'UNIFORM_WORKWEAR', subCategory: 'Aprons', priceUsd: 19.99, localImageName: 'hospitality-apron.jpg', colors: ['Black', 'Navy', 'Burgundy'] },
-  { name: 'Corporate Blazer', category: 'UNIFORM_WORKWEAR', subCategory: 'Blazers', priceUsd: 99.99, localImageName: 'corporate-blazer.jpg', colors: ['Black', 'Navy', 'Charcoal'] },
-  { name: 'Flame Resistant Shirt', category: 'UNIFORM_WORKWEAR', subCategory: 'Safety Wear', priceUsd: 69.99, localImageName: 'fr-shirt.jpg', colors: ['Navy', 'Khaki'] },
-  { name: 'Lab Coat', category: 'UNIFORM_WORKWEAR', subCategory: 'Medical Wear', priceUsd: 44.99, localImageName: 'lab-coat.jpg', colors: ['White'] },
-  { name: 'Nursing Scrub Set', category: 'UNIFORM_WORKWEAR', subCategory: 'Medical Wear', priceUsd: 54.99, localImageName: 'nursing-scrub.jpg', colors: ['Navy', 'Ceil Blue', 'Wine', 'Black'] },
-  { name: 'Reflective Work Jacket', category: 'UNIFORM_WORKWEAR', subCategory: 'Safety Wear', priceUsd: 89.99, localImageName: 'reflective-jacket.jpg', colors: ['Yellow', 'Orange'] },
-  { name: 'Bib Apron', category: 'UNIFORM_WORKWEAR', subCategory: 'Aprons', priceUsd: 22.99, localImageName: 'bib-apron.jpg', colors: ['Black', 'Forest Green', 'Navy'] },
-  { name: 'Polo Uniform Shirt', category: 'UNIFORM_WORKWEAR', subCategory: 'Work Shirts', priceUsd: 32.99, localImageName: 'polo-uniform.jpg', colors: ['Black', 'Navy', 'White', 'Royal Blue'] },
-  { name: 'Barista Apron', category: 'UNIFORM_WORKWEAR', subCategory: 'Aprons', priceUsd: 27.99, localImageName: 'barista-apron.jpg', colors: ['Black', 'Khaki', 'Forest'] },
-
-  // ── SPORTSWEAR ───────────────────────────────────────────────────────────
-  { name: 'Dry-Fit Training Tee', category: 'SPORTSWEAR', subCategory: 'Training Tops', priceUsd: 29.99, localImageName: 'dry-fit-tee.jpg', colors: ['Black', 'White', 'Royal Blue', 'Red'] },
-  { name: 'Compression Shorts', category: 'SPORTSWEAR', subCategory: 'Shorts', priceUsd: 34.99, localImageName: 'compression-shorts.jpg', colors: ['Black', 'Navy', 'Grey'] },
-  { name: 'Track Jacket', category: 'SPORTSWEAR', subCategory: 'Jackets', priceUsd: 64.99, localImageName: 'track-jacket.jpg', colors: ['Black', 'Navy', 'Royal Blue', 'Red'] },
-  { name: 'Football Jersey', category: 'SPORTSWEAR', subCategory: 'Team Jerseys', priceUsd: 49.99, localImageName: 'football-jersey.jpg', colors: ['White', 'Black', 'Red', 'Blue', 'Green'] },
-  { name: 'Basketball Shorts', category: 'SPORTSWEAR', subCategory: 'Shorts', priceUsd: 27.99, localImageName: 'basketball-shorts.jpg', colors: ['Black', 'Navy', 'Red', 'White'] },
-  { name: 'Running Tights', category: 'SPORTSWEAR', subCategory: 'Leggings', priceUsd: 44.99, localImageName: 'running-tights.jpg', colors: ['Black', 'Navy', 'Charcoal'] },
-  { name: 'Cycling Jersey', category: 'SPORTSWEAR', subCategory: 'Cycling', priceUsd: 59.99, localImageName: 'cycling-jersey.jpg', colors: ['Black', 'White', 'Blue', 'Red'] },
-  { name: 'Soccer Jersey', category: 'SPORTSWEAR', subCategory: 'Team Jerseys', priceUsd: 47.99, localImageName: 'soccer-jersey.jpg', colors: ['White', 'Black', 'Blue', 'Red', 'Green'] },
-  { name: 'Athletic Polo', category: 'SPORTSWEAR', subCategory: 'Training Tops', priceUsd: 37.99, localImageName: 'athletic-polo.jpg', colors: ['White', 'Black', 'Royal Blue'] },
-  { name: 'Sports Hoodie', category: 'SPORTSWEAR', subCategory: 'Hoodies', priceUsd: 54.99, localImageName: 'sports-hoodie.jpg', colors: ['Black', 'Grey', 'Navy', 'Red'] },
-  { name: 'Gym Shorts', category: 'SPORTSWEAR', subCategory: 'Shorts', priceUsd: 24.99, localImageName: 'gym-shorts.jpg', colors: ['Black', 'Grey', 'Navy', 'Red'] },
-  { name: 'Sublimation Jersey', category: 'SPORTSWEAR', subCategory: 'Team Jerseys', priceUsd: 54.99, localImageName: 'sublimation-jersey.jpg', colors: ['Custom'] },
-  { name: 'Performance Leggings', category: 'SPORTSWEAR', subCategory: 'Leggings', priceUsd: 47.99, localImageName: 'performance-leggings.jpg', colors: ['Black', 'Charcoal', 'Navy'] },
-  { name: 'Windbreaker Jacket', category: 'SPORTSWEAR', subCategory: 'Jackets', priceUsd: 74.99, localImageName: 'windbreaker.jpg', colors: ['Black', 'Navy', 'Red', 'Royal Blue'] },
-  { name: 'Cricket Whites', category: 'SPORTSWEAR', subCategory: 'Cricket', priceUsd: 69.99, localImageName: 'cricket-whites.jpg', colors: ['White'] },
+  // ── APPAREL — Casual Wear ─────────────────────────────────────────────────
+  { name: 'Hoodies',                   category: 'APPAREL', subCategory: 'Casual Wear',       priceUsd: 24.99, localImageName: 'Hoodie black.png',                    colors: SEED_COLORS },
+  { name: 'T-Shirts',                  category: 'APPAREL', subCategory: 'Casual Wear',       priceUsd: 12.99, localImageName: 't-shirts.jpg',                         colors: SEED_COLORS },
+  { name: 'Polo Shirts',               category: 'APPAREL', subCategory: 'Casual Wear',       priceUsd: 19.99, localImageName: 'polo-shirts.jpg',                      colors: SEED_COLORS },
+  { name: 'Long Sleeve T-Shirts',      category: 'APPAREL', subCategory: 'Casual Wear',       priceUsd: 16.99, localImageName: 'long-sleeve-t-shirts.jpg',             colors: SEED_COLORS },
+  { name: 'Henley Shirts',             category: 'APPAREL', subCategory: 'Casual Wear',       priceUsd: 18.99, localImageName: 'henley-shirts.jpg',                    colors: SEED_COLORS },
+  { name: 'Zip-Up Hoodies',            category: 'APPAREL', subCategory: 'Casual Wear',       priceUsd: 29.99, localImageName: 'zip-up-hoodies.jpg',                   colors: SEED_COLORS },
+  { name: 'Casual Shirts',             category: 'APPAREL', subCategory: 'Casual Wear',       priceUsd: 21.99, localImageName: 'casual-shirts.jpg',                    colors: SEED_COLORS },
+  // ── APPAREL — Loungewear ──────────────────────────────────────────────────
+  { name: 'Sweatshirts',               category: 'APPAREL', subCategory: 'Loungewear',        priceUsd: 22.99, localImageName: 'sweatshirts.jpg',                      colors: SEED_COLORS },
+  { name: 'Fleece Trousers / Joggers', category: 'APPAREL', subCategory: 'Loungewear',        priceUsd: 19.99, localImageName: 'fleece-trousers-joggers.jpg',          colors: SEED_COLORS },
+  { name: 'Sweatpants',                category: 'APPAREL', subCategory: 'Loungewear',        priceUsd: 17.99, localImageName: 'sweatpants.jpg',                       colors: SEED_COLORS },
+  { name: 'Shorts',                    category: 'APPAREL', subCategory: 'Loungewear',        priceUsd: 14.99, localImageName: 'shorts.jpg',                           colors: SEED_COLORS },
+  { name: 'Tank Tops',                 category: 'APPAREL', subCategory: 'Loungewear',        priceUsd: 11.99, localImageName: 'tank-tops.jpg',                        colors: SEED_COLORS },
+  { name: 'Pyjamas and Loungewear',    category: 'APPAREL', subCategory: 'Loungewear',        priceUsd: 26.99, localImageName: 'pyjamas-and-loungewear.jpg',           colors: SEED_COLORS },
+  // ── APPAREL — Knitwear ────────────────────────────────────────────────────
+  { name: 'Jackets',                   category: 'APPAREL', subCategory: 'Knitwear',          priceUsd: 39.99, localImageName: 'jackets.jpg',                          colors: SEED_COLORS },
+  { name: 'Vests',                     category: 'APPAREL', subCategory: 'Knitwear',          priceUsd: 27.99, localImageName: 'vests.jpg',                            colors: SEED_COLORS },
+  { name: 'Chinos and Casual Trousers',category: 'APPAREL', subCategory: 'Knitwear',          priceUsd: 29.99, localImageName: 'chinos-and-casual-trousers.jpg',       colors: SEED_COLORS },
+  { name: 'Cargo Pants',               category: 'APPAREL', subCategory: 'Knitwear',          priceUsd: 31.99, localImageName: 'cargo-pants.jpg',                      colors: SEED_COLORS },
+  { name: 'Knitwear and Cardigans',    category: 'APPAREL', subCategory: 'Knitwear',          priceUsd: 34.99, localImageName: 'knitwear-and-cardigans.jpg',           colors: SEED_COLORS },
+  // ── UNIFORM & WORKWEAR — Industrial Workwear ──────────────────────────────
+  { name: 'Coveralls',                              category: 'UNIFORM_WORKWEAR', subCategory: 'Industrial Workwear', priceUsd: 49.99, localImageName: 'coveralls.jpg',                        colors: SEED_COLORS },
+  { name: 'Overalls',                               category: 'UNIFORM_WORKWEAR', subCategory: 'Industrial Workwear', priceUsd: 44.99, localImageName: 'overalls.jpg',                         colors: SEED_COLORS },
+  { name: 'Industrial Work Shirts',                 category: 'UNIFORM_WORKWEAR', subCategory: 'Industrial Workwear', priceUsd: 27.99, localImageName: 'industrial-work-shirts.jpg',           colors: SEED_COLORS },
+  { name: 'Work Trousers',                          category: 'UNIFORM_WORKWEAR', subCategory: 'Industrial Workwear', priceUsd: 34.99, localImageName: 'work-trousers.jpg',                    colors: SEED_COLORS },
+  { name: 'Cargo Pants',                            category: 'UNIFORM_WORKWEAR', subCategory: 'Industrial Workwear', priceUsd: 36.99, localImageName: 'workwear-cargo-pants.jpg',             colors: SEED_COLORS },
+  { name: 'Bib Overalls',                           category: 'UNIFORM_WORKWEAR', subCategory: 'Industrial Workwear', priceUsd: 42.99, localImageName: 'bib-overalls.jpg',                     colors: SEED_COLORS },
+  { name: 'Mechanic Uniforms',                      category: 'UNIFORM_WORKWEAR', subCategory: 'Industrial Workwear', priceUsd: 54.99, localImageName: 'mechanic-uniforms.jpg',                colors: SEED_COLORS },
+  { name: 'Fire-Retardant (FR) Coveralls',          category: 'UNIFORM_WORKWEAR', subCategory: 'Industrial Workwear', priceUsd: 89.99, localImageName: 'fire-retardant-coveralls.jpg',         colors: SEED_COLORS },
+  { name: 'Welding Jackets',                        category: 'UNIFORM_WORKWEAR', subCategory: 'Industrial Workwear', priceUsd: 64.99, localImageName: 'welding-jackets.jpg',                  colors: SEED_COLORS },
+  { name: 'Welding Trousers',                       category: 'UNIFORM_WORKWEAR', subCategory: 'Industrial Workwear', priceUsd: 54.99, localImageName: 'welding-trousers.jpg',                 colors: SEED_COLORS },
+  // ── UNIFORM & WORKWEAR — Hospitality Uniforms ─────────────────────────────
+  { name: 'Hotel Staff Suiting',                    category: 'UNIFORM_WORKWEAR', subCategory: 'Hospitality Uniforms', priceUsd: 79.99, localImageName: 'hotel-staff-suiting.jpg',             colors: SEED_COLORS },
+  { name: 'Chef Coats and Jackets',                 category: 'UNIFORM_WORKWEAR', subCategory: 'Hospitality Uniforms', priceUsd: 34.99, localImageName: 'chef-coats-and-jackets.jpg',          colors: SEED_COLORS },
+  { name: 'Chef Aprons',                            category: 'UNIFORM_WORKWEAR', subCategory: 'Hospitality Uniforms', priceUsd: 18.99, localImageName: 'chef-aprons.jpg',                     colors: SEED_COLORS },
+  { name: 'Housekeeping Uniforms',                  category: 'UNIFORM_WORKWEAR', subCategory: 'Hospitality Uniforms', priceUsd: 39.99, localImageName: 'housekeeping-uniforms.jpg',            colors: SEED_COLORS },
+  { name: 'Waiter and Restaurant Uniforms',         category: 'UNIFORM_WORKWEAR', subCategory: 'Hospitality Uniforms', priceUsd: 44.99, localImageName: 'waiter-and-restaurant-uniforms.jpg',  colors: SEED_COLORS },
+  // ── UNIFORM & WORKWEAR — Medical Uniforms ─────────────────────────────────
+  { name: 'Lab Coats',                              category: 'UNIFORM_WORKWEAR', subCategory: 'Medical Uniforms', priceUsd: 29.99, localImageName: 'lab-coats.jpg',                           colors: SEED_COLORS },
+  { name: 'Medical Scrubs',                         category: 'UNIFORM_WORKWEAR', subCategory: 'Medical Uniforms', priceUsd: 27.99, localImageName: 'medical-scrubs.jpg',                      colors: SEED_COLORS },
+  // ── UNIFORM & WORKWEAR — Corporate Uniforms ───────────────────────────────
+  { name: 'Safari Suits',                           category: 'UNIFORM_WORKWEAR', subCategory: 'Corporate Uniforms', priceUsd: 69.99, localImageName: 'safari-suits.jpg',                     colors: SEED_COLORS },
+  { name: 'Corporate Uniforms and Blazers',         category: 'UNIFORM_WORKWEAR', subCategory: 'Corporate Uniforms', priceUsd: 89.99, localImageName: 'corporate-uniforms-and-blazers.jpg',   colors: SEED_COLORS },
+  // ── UNIFORM & WORKWEAR — Safety Wear ─────────────────────────────────────
+  { name: 'High Visibility (Hi-Vis) Jackets',       category: 'UNIFORM_WORKWEAR', subCategory: 'Safety Wear', priceUsd: 34.99, localImageName: 'hi-vis-jackets.jpg',                          colors: SEED_COLORS },
+  { name: 'Security Uniforms',                      category: 'UNIFORM_WORKWEAR', subCategory: 'Safety Wear', priceUsd: 59.99, localImageName: 'security-uniforms.jpg',                       colors: SEED_COLORS },
+  { name: 'Reflective Safety Vests',                category: 'UNIFORM_WORKWEAR', subCategory: 'Safety Wear', priceUsd: 14.99, localImageName: 'reflective-safety-vests.jpg',                 colors: SEED_COLORS },
+  { name: 'Rain Suits and Waterproof Jackets',      category: 'UNIFORM_WORKWEAR', subCategory: 'Safety Wear', priceUsd: 49.99, localImageName: 'rain-suits-and-waterproof-jackets.jpg',       colors: SEED_COLORS },
+  { name: 'Caps and Headwear',                      category: 'UNIFORM_WORKWEAR', subCategory: 'Safety Wear', priceUsd: 12.99, localImageName: 'caps-and-headwear.jpg',                       colors: SEED_COLORS },
+  // ── SPORTSWEAR — Teamwear ─────────────────────────────────────────────────
+  { name: 'Football Jerseys',           category: 'SPORTSWEAR', subCategory: 'Teamwear', priceUsd: 29.99, localImageName: 'football-jerseys.jpg',       colors: SEED_COLORS },
+  { name: 'Basketball Jerseys',         category: 'SPORTSWEAR', subCategory: 'Teamwear', priceUsd: 27.99, localImageName: 'basketball-jerseys.jpg',     colors: SEED_COLORS },
+  { name: 'Baseball Jerseys',           category: 'SPORTSWEAR', subCategory: 'Teamwear', priceUsd: 31.99, localImageName: 'baseball-jerseys.jpg',       colors: SEED_COLORS },
+  { name: 'Soccer Jerseys',             category: 'SPORTSWEAR', subCategory: 'Teamwear', priceUsd: 29.99, localImageName: 'soccer-jerseys.jpg',         colors: SEED_COLORS },
+  { name: 'Cricket Jerseys',            category: 'SPORTSWEAR', subCategory: 'Teamwear', priceUsd: 26.99, localImageName: 'cricket-jerseys.jpg',        colors: SEED_COLORS },
+  { name: 'Rugby Jerseys',              category: 'SPORTSWEAR', subCategory: 'Teamwear', priceUsd: 34.99, localImageName: 'rugby-jerseys.jpg',          colors: SEED_COLORS },
+  { name: 'Volleyball Jerseys',         category: 'SPORTSWEAR', subCategory: 'Teamwear', priceUsd: 24.99, localImageName: 'volleyball-jerseys.jpg',     colors: SEED_COLORS },
+  { name: 'Cycling Jerseys',            category: 'SPORTSWEAR', subCategory: 'Teamwear', priceUsd: 39.99, localImageName: 'cycling-jerseys.jpg',        colors: SEED_COLORS },
+  { name: 'Sleeveless Jerseys',         category: 'SPORTSWEAR', subCategory: 'Teamwear', priceUsd: 19.99, localImageName: 'sleeveless-jerseys.jpg',     colors: SEED_COLORS },
+  { name: 'Teamwear Sets',              category: 'SPORTSWEAR', subCategory: 'Teamwear', priceUsd: 54.99, localImageName: 'teamwear-sets.jpg',           colors: SEED_COLORS },
+  // ── SPORTSWEAR — Training Wear ────────────────────────────────────────────
+  { name: 'Compression Shirts',              category: 'SPORTSWEAR', subCategory: 'Training Wear', priceUsd: 22.99, localImageName: 'compression-shirts.jpg',                colors: SEED_COLORS },
+  { name: 'Compression Tights and Leggings', category: 'SPORTSWEAR', subCategory: 'Training Wear', priceUsd: 24.99, localImageName: 'compression-tights-and-leggings.jpg',  colors: SEED_COLORS },
+  { name: 'Training T-Shirts',               category: 'SPORTSWEAR', subCategory: 'Training Wear', priceUsd: 17.99, localImageName: 'training-t-shirts.jpg',                colors: SEED_COLORS },
+  { name: 'Tank Tops',                       category: 'SPORTSWEAR', subCategory: 'Training Wear', priceUsd: 14.99, localImageName: 'sporty-tank-tops.jpg',                 colors: SEED_COLORS },
+  { name: 'Warm-Up Suits',                   category: 'SPORTSWEAR', subCategory: 'Training Wear', priceUsd: 49.99, localImageName: 'warm-up-suits.jpg',                    colors: SEED_COLORS },
+  { name: 'Running Shorts',                  category: 'SPORTSWEAR', subCategory: 'Training Wear', priceUsd: 16.99, localImageName: 'running-shorts.jpg',                   colors: SEED_COLORS },
+  // ── SPORTSWEAR — Performance Wear ────────────────────────────────────────
+  { name: 'Performance Polo Shirts',    category: 'SPORTSWEAR', subCategory: 'Performance Wear',  priceUsd: 26.99, localImageName: 'performance-polo-shirts.jpg',  colors: SEED_COLORS },
+  // ── SPORTSWEAR — Athleisure Wear ─────────────────────────────────────────
+  { name: 'Hoodies',                    category: 'SPORTSWEAR', subCategory: 'Athleisure Wear',   priceUsd: 34.99, localImageName: 'athleisure-hoodies.jpg',        colors: SEED_COLORS },
+  { name: 'Sweatshirts',                category: 'SPORTSWEAR', subCategory: 'Athleisure Wear',   priceUsd: 28.99, localImageName: 'athleisure-sweatshirts.jpg',    colors: SEED_COLORS },
+  { name: 'Jackets',                    category: 'SPORTSWEAR', subCategory: 'Athleisure Wear',   priceUsd: 44.99, localImageName: 'athleisure-jackets.jpg',        colors: SEED_COLORS },
+  { name: 'Tracksuits',                 category: 'SPORTSWEAR', subCategory: 'Athleisure Wear',   priceUsd: 59.99, localImageName: 'tracksuits.jpg',                colors: SEED_COLORS },
+  { name: 'Shorts',                     category: 'SPORTSWEAR', subCategory: 'Athleisure Wear',   priceUsd: 18.99, localImageName: 'athleisure-shorts.jpg',         colors: SEED_COLORS },
+  { name: 'Track Pants',                category: 'SPORTSWEAR', subCategory: 'Athleisure Wear',   priceUsd: 29.99, localImageName: 'track-pants.jpg',               colors: SEED_COLORS },
 ];
 
-// ── Mock retail clients & orders ──────────────────────────────────────────────
-
+// ── Mock retail clients ────────────────────────────────────────────────────────
 const MOCK_CLIENTS = [
   { fullName: 'James Hartwell',    email: 'j.hartwell@mail.com',       phone: '+1 312 880 4421' },
   { fullName: 'Sarah Mitchell',    email: 's.mitchell@corp.com',        phone: '+1 415 920 3310' },
@@ -114,8 +140,7 @@ const MOCK_CONTRACTS = [
   },
 ];
 
-// ── syncSequences — self-corrects after all rows are inserted ─────────────────
-
+// ── syncSequences ─────────────────────────────────────────────────────────────
 async function syncSequences() {
   const maxOrder = await prisma.retailOrder.findFirst({
     orderBy: { displayId: 'desc' },
@@ -133,7 +158,6 @@ async function syncSequences() {
     ? parseInt(maxContract.displayId.replace('RFQ-', ''), 10)
     : 0;
 
-  // setval(..., value, false) → next nextval() returns exactly `value`
   await prisma.$executeRawUnsafe(
     `SELECT setval('order_display_seq', ${maxOrderNum + 1}, false)`,
   );
@@ -147,31 +171,29 @@ async function syncSequences() {
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
-
 async function main() {
   console.log('🌱 Starting GTM seed...');
 
-  // 1 — Seed products
+  // 0 — Clean slate: wipe old products in FK-safe order
+  console.log('  Clearing stale product data...');
+  await prisma.orderItem.deleteMany({});
+  await prisma.retailOrder.deleteMany({});
+  await prisma.product.deleteMany({});
+  console.log('  ✓ Stale data cleared');
+
+  // 1 — Seed all 65 products (mirrored from CatalogData.js)
   console.log(`  Seeding ${CATALOG.length} products...`);
   for (const p of CATALOG) {
     const { colors, ...productData } = p;
-    await prisma.product.upsert({
-      where:  { sku: `seed-${p.localImageName}` },
-      create: {
+    await prisma.product.create({
+      data: {
         sku:  `seed-${p.localImageName}`,
         ...productData,
         colors: { create: colors.map((colorName) => ({ colorName })) },
       },
-      update: {
-        ...productData,
-        colors: {
-          deleteMany: {},
-          create: colors.map((colorName) => ({ colorName })),
-        },
-      },
     });
   }
-  console.log('  ✓ Products seeded');
+  console.log(`  ✓ ${CATALOG.length} products seeded`);
 
   // 2 — Seed clients
   console.log('  Seeding clients...');
@@ -184,35 +206,26 @@ async function main() {
   }
   console.log('  ✓ Clients seeded');
 
-  // 3 — Seed a sample order (ORD-0091) tied to first client
-  const firstClient = await prisma.client.findFirst({
-    where: { email: MOCK_CLIENTS[0]!.email },
-  });
-  const firstProduct = await prisma.product.findFirst({
-    where: { isActive: true },
-  });
+  // 3 — Seed a sample order tied to first client + first product
+  const firstClient  = await prisma.client.findFirst({ where: { email: MOCK_CLIENTS[0]!.email } });
+  const firstProduct = await prisma.product.findFirst({ where: { isActive: true } });
 
   if (firstClient && firstProduct) {
-    const existingOrder = await prisma.retailOrder.findUnique({
-      where: { displayId: 'ORD-0091' },
-    });
-    if (!existingOrder) {
-      await prisma.retailOrder.create({
-        data: {
-          displayId: 'ORD-0091',
-          clientId:  firstClient.id,
-          status:    'DISPATCHED',
-          items: {
-            create: {
-              productId: firstProduct.id,
-              qty:       3,
-              unitPrice: firstProduct.priceUsd,
-            },
+    await prisma.retailOrder.create({
+      data: {
+        displayId: 'ORD-0091',
+        clientId:  firstClient.id,
+        status:    'DISPATCHED',
+        items: {
+          create: {
+            productId: firstProduct.id,
+            qty:       3,
+            unitPrice: firstProduct.priceUsd,
           },
         },
-      });
-      console.log('  ✓ Sample order ORD-0091 seeded');
-    }
+      },
+    });
+    console.log('  ✓ Sample order ORD-0091 seeded');
   }
 
   // 4 — Seed contracts
@@ -226,29 +239,26 @@ async function main() {
   }
   console.log('  ✓ Contracts seeded');
 
-  // 5 — Seed SUPER_ADMIN user
-  const adminEmail = 'admin@gtm-admin.com';
-  const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
-  if (!existingAdmin) {
-    const passwordHash = await hashPassword('GTM_Admin_Change_Me_2025!');
-    await prisma.user.create({
-      data: {
-        email: adminEmail,
-        passwordHash,
-        role:  'SUPER_ADMIN',
-      },
+  // 5 — Seed operator accounts
+  const OPERATORS = [
+    { email: 'aman@gtm-admin.com',  name: 'Aman'  },
+    { email: 'yazir@gtm-admin.com', name: 'Yazir' },
+  ];
+  const sharedPasswordHash = await hashPassword('gtmadmin-2026');
+
+  for (const op of OPERATORS) {
+    await prisma.user.upsert({
+      where:  { email: op.email },
+      update: { passwordHash: sharedPasswordHash, role: 'SUPER_ADMIN' },
+      create: { email: op.email, passwordHash: sharedPasswordHash, role: 'SUPER_ADMIN' },
     });
-    console.log('  ✓ SUPER_ADMIN user created — CHANGE PASSWORD before production!');
-    console.log(`    Email: ${adminEmail}`);
-    console.log('    Password: GTM_Admin_Change_Me_2025!');
-  } else {
-    console.log('  ✓ SUPER_ADMIN user already exists — skipped');
+    console.log(`  ✓ Operator upserted — ${op.name} <${op.email}>`);
   }
 
-  // 6 — Sync sequences to match actual seeded data
+  // 6 — Sync DB sequences
   await syncSequences();
 
-  console.log('\n✅ Seed complete.');
+  console.log('\n✅ Seed complete — database now mirrors CatalogData.js (65 products).');
 }
 
 main()

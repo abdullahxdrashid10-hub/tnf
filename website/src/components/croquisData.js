@@ -1,3 +1,1 @@
-// Base64 placeholders to be populated manually or via safe write
-export const femaleCroquis = "";
-export const maleCroquis = "";
+// croquisData — REMOVED. Used only by the deprecated TryOnModal feature.

@@ -12,7 +12,7 @@ import MaterialPage from './components/MaterialPage';
 import CheckoutPage from './components/CheckoutPage';
 import CollectionPage from './components/CollectionPage';
 import AdminPanel from './components/AdminPanel';
-import TracePage from './components/TracePage';
+
 
 const HomeShowroom = () => (
   <>
@@ -38,7 +38,7 @@ function App() {
                 <Route path="/material/:materialType" element={<MaterialPage />} />
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/collection" element={<CollectionPage />} />
-                <Route path="/trace" element={<TracePage />} />
+
               </Routes>
               <Footer />
             </div>

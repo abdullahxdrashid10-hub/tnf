@@ -1,9 +1,10 @@
 // server/src/controllers/audit.controller.ts
-import type { FastifyRequest, FastifyReply } from 'fastify';
+import type { FastifyReply } from 'fastify';
 import { z } from 'zod';
 import type { AuditAction } from '@prisma/client';
 import { prisma } from '../plugins/db.js';
 import { toPrismaPagination, paginate } from '../lib/pagination.js';
+import type { ZodRequest } from '../lib/fastifyTypes.js';
 
 // ── Zod schemas ───────────────────────────────────────────────────────────────
 
@@ -23,7 +24,7 @@ export const ListAuditQuery = z.object({
 // ── Handlers ─────────────────────────────────────────────────────────────────
 
 export async function listAuditLogs(
-  request: FastifyRequest<{ Querystring: z.infer<typeof ListAuditQuery> }>,
+  request: ZodRequest<{ Querystring: z.infer<typeof ListAuditQuery> }>,
   reply: FastifyReply,
 ) {
   const { actorId, resourceType, resourceId, action, from, to, page, limit } =

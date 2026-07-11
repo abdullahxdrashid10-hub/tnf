@@ -1,5 +1,6 @@
 // server/src/routes/audit.routes.ts
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod';
+import type { z } from 'zod';
 import { verifyJWT } from '../middleware/verifyJWT.js';
 import { requireRole } from '../middleware/requireRole.js';
 import * as ctrl from '../controllers/audit.controller.js';
@@ -9,7 +10,7 @@ const auditRoutes: FastifyPluginAsyncZod = async (fastify) => {
   fastify.addHook('preHandler', verifyJWT);
 
   // ── GET /api/audit ────────────────────────────────────────────────────────
-  fastify.get(
+  fastify.get<{ Querystring: z.infer<typeof ctrl.ListAuditQuery> }>(
     '/',
     {
       schema:     { querystring: ctrl.ListAuditQuery },

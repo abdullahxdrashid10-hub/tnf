@@ -1,13 +1,43 @@
 // src/components/CollectionPage.jsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { catalogData, getProductColorImage } from './CatalogData';
 import { useCart } from './CartContext';
-import TryOnModal from './TryOnModal';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
+// DB enum → human-readable category (mirrors CatalogData.js values)
+const DB_CATEGORY_MAP = {
+  APPAREL:          'Apparel',
+  UNIFORM_WORKWEAR: 'Uniform & Workwear',
+  SPORTSWEAR:       'Sportswear',
+};
 
+// Merge a single DB product with its CatalogData.js twin.
+// Key: name + subCategory — handles the 6 names that repeat across categories.
+function normalizeProduct(dbProduct) {
+  const humanCategory = DB_CATEGORY_MAP[dbProduct.category] || dbProduct.category;
+  const catalog = catalogData.find(
+    (c) => c.name === dbProduct.name && c.subCategory === dbProduct.subCategory,
+  );
+  const standardColors = dbProduct.colors.map((c) => c.colorName);
+  return {
+    dbId:           dbProduct.id,    // real DB integer — stored in cart for checkout
+    id:             dbProduct.id,
+    name:           dbProduct.name,
+    category:       humanCategory,
+    subCategory:    dbProduct.subCategory,
+    price:          `$${Number(dbProduct.priceUsd).toFixed(2)}`,
+    priceUsd:       Number(dbProduct.priceUsd),
+    standardColors: standardColors.length > 0
+      ? standardColors
+      : ['Navy Blue', 'Black', 'Burgundy', 'White', 'Grey'],
+    colorImages:    catalog?.colorImages  || {},
+    image:          catalog?.image        || `https://picsum.photos/seed/${encodeURIComponent(dbProduct.localImageName || dbProduct.name)}/400/300`,
+    description:    catalog?.description  || '',
+  };
+}
 // ─── URL param ↔ Category label lookup tables ─────────────────────────────────
 // param value (URL)  →  data category string
 const PARAM_TO_CATEGORY = {
@@ -75,9 +105,28 @@ export default function CollectionPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery]   = useState('');
 
-  // ── Try-On modal state ──────────────────────────────────────────────────
-  const [isTryOnOpen,          setIsTryOnOpen]          = useState(false);
-  const [selectedTryOnProduct, setSelectedTryOnProduct] = useState(null);
+  // ── Live products from DB ───────────────────────────────────────────────
+  const [products,  setProducts]  = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    fetch(`${API_BASE}/api/public/products`)
+      .then((r) => r.json())
+      .then((json) => {
+        if (cancelled) return;
+        const normalized = (json.data || []).map(normalizeProduct);
+        setProducts(normalized.length > 0 ? normalized : catalogData);
+      })
+      .catch(() => {
+        if (!cancelled) setProducts(catalogData); // graceful fallback
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   // Active category — derived purely from URL, never from local state
   const categoryParam   = searchParams.get('category'); // e.g. "apparel" | null
@@ -96,7 +145,7 @@ export default function CollectionPage() {
 
   // ── Filtered product list ─────────────────────────────────────────────────
   const filtered = useMemo(() => {
-    let results = catalogData;
+    let results = products; // ← live from DB (falls back to catalogData if API is down)
 
     // Category filter from URL
     if (activeCategory) {
@@ -114,7 +163,7 @@ export default function CollectionPage() {
       );
     }
     return results;
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory, searchQuery, products]);
 
   // ── Page title derived from active param ─────────────────────────────────
   const pageTitle = activeCategory ?? 'Full Collection Directory';
@@ -251,10 +300,6 @@ export default function CollectionPage() {
                   key={`${product.id}-${product.category}`}
                   product={product}
                   index={i}
-                  onTryOn={() => {
-                    setSelectedTryOnProduct(product);
-                    setIsTryOnOpen(true);
-                  }}
                 />
               ))}
             </motion.div>
@@ -272,22 +317,18 @@ export default function CollectionPage() {
         </div>
       </section>
 
-      {/* ── Try-On Modal Portal ───────────────────────────────────────────── */}
-      <TryOnModal
-        isOpen={isTryOnOpen}
-        onClose={() => setIsTryOnOpen(false)}
-        product={selectedTryOnProduct}
-      />
+
 
     </main>
   );
 }
 
 // ─── ProductCard ──────────────────────────────────────────────────────────────
-function ProductCard({ product, index, onTryOn }) {
+function ProductCard({ product, index }) {
   const { addToCart } = useCart();
   const [selectedColor, setSelectedColor] = useState(product.standardColors[0]);
   const [addedFlash,    setAddedFlash]    = useState(false);
+  const [showDesc,      setShowDesc]      = useState(false);
 
   function handleAddToCart() {
     addToCart(product, selectedColor);
@@ -435,13 +476,68 @@ function ProductCard({ product, index, onTryOn }) {
           className="mt-auto pt-3"
           style={{ borderTop: '1px solid rgba(184,115,51,0.08)' }}
         >
-          {/* Virtual Matrix Try-On trigger */}
-          <button
-            onClick={onTryOn}
-            className="border border-[#B87333]/30 text-[#B87333] hover:bg-[#B87333]/5 text-[9px] uppercase tracking-[0.2em] py-2 px-4 rounded-sm font-bold transition-all duration-200 w-full text-center cursor-pointer mb-2"
+          {/* Description toggle button — copper sweep + rotating + */}
+          <motion.button
+            onClick={() => setShowDesc((v) => !v)}
+            whileTap={{ scale: 0.96 }}
+            className="relative w-full text-[9px] uppercase tracking-[0.2em] font-semibold py-2 px-3 mb-2 flex items-center justify-between overflow-hidden"
+            style={{
+              color:  showDesc ? '#B87333' : 'rgba(250,247,242,0.5)',
+              border: showDesc ? '1px solid rgba(184,115,51,0.35)' : '1px solid rgba(250,247,242,0.1)',
+              cursor: 'pointer',
+              background: 'transparent',
+              transition: 'color 0.25s ease, border-color 0.25s ease',
+            }}
           >
-            VIRTUAL MATRIX TRY-ON
-          </button>
+            {/* Sweeping copper fill — animates from left on open */}
+            <motion.span
+              className="absolute inset-0"
+              style={{ backgroundColor: 'rgba(184,115,51,0.10)', transformOrigin: 'left center' }}
+              initial={false}
+              animate={{ scaleX: showDesc ? 1 : 0 }}
+              transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+            />
+            <span className="relative z-10 tracking-widest">View Product Description</span>
+            {/* + rotates to × */}
+            <motion.span
+              className="relative z-10 text-base leading-none font-thin"
+              animate={{ rotate: showDesc ? 45 : 0 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              style={{ color: showDesc ? '#B87333' : 'rgba(250,247,242,0.4)', display: 'inline-block' }}
+            >
+              +
+            </motion.span>
+          </motion.button>
+
+          {/* Animated description panel — height + blur reveal */}
+          <AnimatePresence initial={false}>
+            {showDesc && (
+              <motion.div
+                key="desc-panel"
+                initial={{ height: 0 }}
+                animate={{ height: 'auto' }}
+                exit={{ height: 0 }}
+                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+                style={{ overflow: 'hidden' }}
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: -10, filter: 'blur(8px)' }}
+                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                  exit={{ opacity: 0, y: -6, filter: 'blur(4px)' }}
+                  transition={{ duration: 0.3, delay: 0.07, ease: [0.22, 1, 0.36, 1] }}
+                  className="mb-2 px-3 py-2.5 text-[9px] leading-relaxed tracking-wide"
+                  style={{
+                    color:           'rgba(237,224,212,0.75)',
+                    backgroundColor: 'rgba(10,8,6,0.82)',
+                    border:          '1px solid rgba(184,115,51,0.14)',
+                    borderTop:       'none',
+                  }}
+                >
+                  {product.description || 'No description available.'}
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <motion.button
             onClick={handleAddToCart}
