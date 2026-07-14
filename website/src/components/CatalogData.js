@@ -103,7 +103,11 @@ export const catalogData = [
     localImageName: "sweatshirts.jpg",
     standardColors: STANDARD_COLORS,
     colorImages: {
-      "White": "/assets/White sweatshirt.png",
+      "Black":     "/assets/sportswear sweatshirts black.jpeg",
+      "Burgundy":  "/assets/sportswear sweatshirts burgendy.jpeg",
+      "Grey":      "/assets/sportswear sweatshirts grey.jpeg",
+      "Navy Blue": "/assets/sportswear sweatshirts navy blue.jpeg",
+      "White":     "/assets/White sweatshirt.png",
     },
     description: "350gsm cotton-polyester fleece crew-neck with a brushed interior and set-in sleeves for a clean, structured silhouette. Ribbed collar, cuffs, and hem ensure shape retention through institutional laundering. A premium surface for embroidery and screen-print decoration.",
   },
