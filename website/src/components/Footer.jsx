@@ -34,12 +34,12 @@ const PLATFORM = [
 
 const CONNECT = [
   { label: 'Email', href: 'mailto:info@greytextileandmerchendise.com' },
-  { label: 'Website',      href: 'greytextileandmerchendise.com'  },
-  { label: 'Instagram',                       href: '#'                                        },
-  { label: 'LinkedIn',                        href: '#'                                        },
+  { label: 'Website',      href: 'https://www.greytextileandmerchendise.com'  },
+  { label: 'Instagram',    href: 'https://www.instagram.com/grey_textile?utm_source=qr&igsh=dWF4NmdyeGN1NXV2' },
+  { label: 'LinkedIn',     href: 'https://www.linkedin.com/company/grey-textile-merchandise-pvt-ltd' },
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Footer Component ────────────────────────────────────────────────────────
 const Footer = () => {
   const go = useFooterNav();
 
@@ -54,10 +54,10 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* ── Main grid ──────────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 mb-16">
 
-          {/* ── Brand column (left, spans 5/12) ────────────────────────────── */}
-          <div className="md:col-span-5">
+          {/* ── Brand column (left, spans 4/12) ────────────────────────────── */}
+          <div className="md:col-span-4">
 
             {/* Logo image */}
             <div className="mb-6">
@@ -93,8 +93,8 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* ── Collections column ──────────────────────────────────────────── */}
-          <div className="md:col-span-3">
+          {/* ── Collections column (spans 2/12) ────────────────────────────── */}
+          <div className="md:col-span-2">
             <h4 
               className="font-serif text-[9px] tracking-[0.3em] uppercase mb-6"
               style={{ color: '#FAF7F2' }}
@@ -118,7 +118,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* ── Platform column ────────────────────────────────────────────── */}
+          {/* ── Platform column (spans 2/12) ───────────────────────────────── */}
           <div className="md:col-span-2">
             <h4
               className="font-serif text-[9px] tracking-[0.3em] uppercase mb-6"
@@ -143,7 +143,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* ── Connect column ─────────────────────────────────────────────── */}
+          {/* ── Connect column (spans 2/12) ────────────────────────────────── */}
           <div className="md:col-span-2">
             <h4
               className="font-serif text-[9px] tracking-[0.3em] uppercase mb-6"
@@ -166,7 +166,49 @@ const Footer = () => {
               ))}
             </ul>
           </div>
+
+          {/* ── Location Map column (spans 2/12) ───────────────────────────── */}
+          <div className="md:col-span-2 text-left">
+            <h4
+              className="font-serif text-[9px] tracking-[0.3em] uppercase mb-6"
+              style={{ color: '#FAF7F2' }}
+            >
+              Headquarters
+            </h4>
+            <div className="space-y-3">
+              <a
+                href="https://www.google.com/maps/search/?api=1&query=Office+C1/R3+1st+Floor+Al+Burhan+Circle+Block+E+North+Nazimabad+Karachi"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-[11px] font-light leading-relaxed hover:text-[#B87333] transition-colors duration-200"
+                style={{ color: 'rgba(250,247,242,0.5)' }}
+              >
+                Office C1/R3 1st Floor Al Burhan Circle Block E North Nazimabad, Karachi
+              </a>
+              <div className="rounded-lg overflow-hidden border border-[#B87333]/15 shadow-xl h-24 relative group cursor-pointer bg-[#161311]">
+                <iframe
+                  title="Google Maps Location"
+                  src="https://maps.google.com/maps?q=Al%20Burhan%20Circle%20Block%20E%20North%20Nazimabad,%20Karachi&t=&z=14&ie=UTF8&iwloc=&output=embed"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0, filter: 'grayscale(1) invert(0.9) contrast(1.2)' }}
+                  allowFullScreen=""
+                  loading="lazy"
+                ></iframe>
+                <a
+                  href="https://www.google.com/maps/search/?api=1&query=Office+C1/R3+1st+Floor+Al+Burhan+Circle+Block+E+North+Nazimabad+Karachi"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute inset-0 bg-[#1A1A1A]/85 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-[10px] font-bold text-[#B87333] tracking-widest"
+                >
+                  OPEN MAPS
+                </a>
+              </div>
+            </div>
+          </div>
+
         </div>
+
 
         {/* ── Bottom bar ─────────────────────────────────────────────────────── */}
         <div
