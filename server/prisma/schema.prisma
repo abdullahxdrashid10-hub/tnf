@@ -99,7 +99,7 @@ model Product {
   name           String
   category       ProductCategory
   subCategory    String
-  priceUsd       Decimal         @db.Decimal(10, 2)       // numeric — not "$12.99" string
+  priceUsd       Decimal?        @db.Decimal(10, 2)       // numeric — not "$12.99" string
   imageUrl       String?
   localImageName String?
   isActive       Boolean         @default(true)            // soft-delete flag

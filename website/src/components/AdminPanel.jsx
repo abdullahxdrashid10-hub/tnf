@@ -139,7 +139,6 @@ const labelCls = "block text-[9px] tracking-[0.25em] uppercase text-[#6A5040] mb
 function AddProductModal({ initial, onClose, onSave }) {
   const [form, setForm] = useState({
     name:        initial?.name        ?? '',
-    priceUsd:    initial?.priceUsd    ?? '',
     category:    initial?.category    ?? 'APPAREL',
     subCategory: initial?.subCategory ?? '',
     imageUrl:    initial?.imageUrl    ?? '',
@@ -149,8 +148,8 @@ function AddProductModal({ initial, onClose, onSave }) {
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (!form.name.trim() || !String(form.priceUsd).trim()) return;
-    onSave({ ...form, id: initial?.id });
+    if (!form.name.trim()) return;
+    onSave({ ...form, priceUsd: null, id: initial?.id });
     onClose();
   }
 
@@ -200,7 +199,6 @@ function AddProductModal({ initial, onClose, onSave }) {
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {[
             { key: 'name',        label: 'Product Name',            placeholder: 'e.g. Industrial Utility Jacket', type: 'text'   },
-            { key: 'priceUsd',    label: 'Base Price (USD)',        placeholder: 'e.g. 24.50',                    type: 'number', step: '0.01' },
             { key: 'subCategory', label: 'Sub-Category',            placeholder: 'e.g. Safety Outerwear',         type: 'text'   },
             { key: 'imageUrl',    label: 'Image URL Reference',     placeholder: 'https://example.com/image.jpg', type: 'text'   },
           ].map(({ key, label, placeholder, type, step }) => (
@@ -210,10 +208,10 @@ function AddProductModal({ initial, onClose, onSave }) {
                 className={inputCls}
                 type={type}
                 step={step}
-                value={form[key]}
+                value={form[key] || ''}
                 onChange={set(key)}
                 placeholder={placeholder}
-                required={key === 'name' || key === 'priceUsd'}
+                required={key === 'name'}
               />
             </div>
           ))}
@@ -312,13 +310,13 @@ function ProductRegistryView({ products, onAdd, onEdit, onDelete }) {
           <div
             className="grid text-[8px] tracking-[0.25em] uppercase px-4 py-3"
             style={{
-              gridTemplateColumns: '2fr 1.2fr 1.4fr 1fr 1.4fr',
+              gridTemplateColumns: '2fr 1.2fr 1.4fr 1.4fr',
               color: T.muted,
               backgroundColor: T.bg0,
               borderBottom: `1px solid ${T.border}`,
             }}
           >
-            {['PRODUCT NAME', 'CATEGORY', 'SUB-CATEGORY', 'BASE PRICE', 'OPERATIONS'].map((h) => (
+            {['PRODUCT NAME', 'CATEGORY', 'SUB-CATEGORY', 'OPERATIONS'].map((h) => (
               <span key={h}>{h}</span>
             ))}
           </div>
@@ -338,7 +336,7 @@ function ProductRegistryView({ products, onAdd, onEdit, onDelete }) {
               {...rowVariant(i)}
               className="grid items-center px-4 py-3 transition-colors duration-100 group"
               style={{
-                gridTemplateColumns: '2fr 1.2fr 1.4fr 1fr 1.4fr',
+                gridTemplateColumns: '2fr 1.2fr 1.4fr 1.4fr',
                 borderBottom: `1px solid ${T.border}`,
                 backgroundColor: i % 2 ? 'rgba(200,120,58,0.03)' : 'transparent',
               }}
@@ -352,9 +350,6 @@ function ProductRegistryView({ products, onAdd, onEdit, onDelete }) {
               </span>
               <span className="text-[9px] tracking-wide truncate" style={{ color: T.muted }}>
                 {product.subCategory || '—'}
-              </span>
-              <span className="text-[9px] font-bold" style={{ color: T.copper.base }}>
-                ${Number(product.priceUsd).toFixed(2)}
               </span>
               <div className="flex gap-1.5">
                 <ActionButton
@@ -778,7 +773,7 @@ export default function AdminPanel() {
     try {
       const payload = {
         name: formData.name,
-        priceUsd: parseFloat(formData.priceUsd),
+        priceUsd: formData.priceUsd != null ? parseFloat(formData.priceUsd) : null,
         category: formData.category,
         subCategory: formData.subCategory,
         imageUrl: formData.imageUrl || undefined,

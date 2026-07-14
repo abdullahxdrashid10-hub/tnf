@@ -93,16 +93,6 @@ function CartItemRow({ item, onUpdate, onRemove }) {
           <span className="text-[9px] uppercase tracking-widest font-semibold font-mono" style={{ color: '#B87333' }}>
             Finish: {item.selectedColor || 'Default'}
           </span>
-          {item.price && (
-            <span className="text-[9px] font-mono uppercase tracking-wider px-2 py-0.5"
-              style={{
-                color: 'rgba(250,247,242,0.45)',
-                backgroundColor: 'rgba(250,247,242,0.04)',
-                border: '1px solid rgba(250,247,242,0.08)',
-              }}>
-              Base: {item.price} / unit
-            </span>
-          )}
         </div>
 
         {/* ── Quantity divider ──────────────────────────────────────────────── */}
@@ -251,10 +241,10 @@ function CartItemRow({ item, onUpdate, onRemove }) {
                   >
                     <span style={{ color: '#B87333', fontSize: '10px' }}>◆</span>
                     <p className="text-[9px] font-bold uppercase tracking-[0.18em]" style={{ color: '#B87333' }}>
-                      Volume Discount Pricing applied
+                      Large Scale Production Tier Applied
                     </p>
                     <span className="ml-auto text-[8px] font-mono" style={{ color: 'rgba(184,115,51,0.55)' }}>
-                      1,000+ tier
+                      1,000+ units
                     </span>
                   </div>
                 </motion.div>

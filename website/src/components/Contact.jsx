@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { WHATSAPP_LINK } from './CatalogData';
 
 // ─── Inquiry type options (replaces single-purpose product slider) ─────────────
 const INQUIRY_TYPES = [
@@ -121,11 +122,22 @@ const Contact = () => {
                 <h3 className="text-[#FAF7F2] group-hover:text-[#B87333] font-serif font-medium text-base mb-2 tracking-wide transition-colors duration-300">
                   Global Logistics Desks
                 </h3>
-                <p className="text-[#FAF7F2]/45 font-mono text-xs leading-relaxed tracking-widest">
+                <p className="text-[#FAF7F2]/45 font-mono text-xs leading-relaxed tracking-widest mb-4">
                   +92 336 666643
                   <br />
                   +92 315 2262430
                 </p>
+                <a
+                  href={WHATSAPP_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 border border-[#25D366]/40 hover:border-[#25D366] rounded-md text-[10px] text-[#25D366] tracking-widest font-bold uppercase transition-all duration-300 bg-[#25D366]/5 hover:bg-[#25D366]/10"
+                >
+                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.022-.014-.507-.25-.586-.278c-.079-.029-.137-.042-.194.041c-.057.085-.222.278-.272.336c-.05.059-.101.066-.179.027c-.079-.039-.333-.122-.635-.39c-.235-.21-.393-.469-.439-.55c-.046-.079-.005-.122.035-.161c.036-.035.079-.092.119-.138c.04-.046.053-.078.08-.129c.027-.052.014-.097-.007-.138c-.02-.041-.194-.469-.266-.64c-.07-.17-.142-.147-.195-.149c-.051-.002-.108-.002-.165-.002c-.058 0-.151.022-.23.107c-.079.085-.302.296-.302.721c0 .424.309.835.352.89c.044.055.607.928 1.47 1.301c.205.088.366.14.493.181c.206.066.393.056.541.034c.165-.024.507-.207.578-.407c.071-.2.071-.371.05-.407c-.021-.035-.078-.057-.157-.097m-5.467 5.163h-.005c-1.22 0-2.42-.328-3.477-.948l-.25-.148l-2.585.678l.69-2.523l-.162-.258c-.68-1.082-1.04-2.334-1.04-3.623c0-3.824 3.113-6.937 6.937-6.937c1.852 0 3.593.721 4.903 2.034a6.892 6.892 0 0 1 2.031 4.899c0 3.828-3.113 6.937-6.937 6.937m7.934-14.88a8.85 8.85 0 0 0-6.275-2.597c-4.887 0-8.865 3.979-8.865 8.868c0 1.556.406 3.076 1.18 4.417l-1.253 4.58l4.685-1.229c1.293.706 2.748 1.077 4.225 1.079h.004c4.886 0 8.867-3.979 8.867-8.868c0-2.368-.921-4.597-2.597-6.273" />
+                  </svg>
+                  Chat on WhatsApp
+                </a>
               </div>
 
               <div
@@ -259,7 +271,6 @@ const Contact = () => {
                       <option value="apparel"      className="bg-[#161311] text-[#FAF7F2]">Apparel Collection Range</option>
                       <option value="uniforms"     className="bg-[#161311] text-[#FAF7F2]">Uniform &amp; Workwear Division</option>
                       <option value="sportswear"   className="bg-[#161311] text-[#FAF7F2]">Sportswear &amp; Performance Line</option>
-                      <option value="hometextiles" className="bg-[#161311] text-[#FAF7F2]">Home Textiles (Sheets &amp; Towels)</option>
                     </select>
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#B87333] opacity-60 text-xs">
                       ▼

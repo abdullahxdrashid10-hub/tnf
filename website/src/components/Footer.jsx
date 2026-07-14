@@ -20,21 +20,21 @@ const linkCls =
 // ─── Column data ───────────────────────────────────────────────────────────────
 // route: null → external href, otherwise internal SPA path
 const COLLECTIONS = [
-  { label: 'Corporate Uniforms',       route: '/collection?category=uniforms'   },
-  { label: 'Custom Hoodies & Apparel', route: '/collection?category=apparel'    },
-  { label: 'Healthcare Scrubs',        route: '/collection?category=uniforms'   },
-  { label: 'Bespoke Accessories',      route: '/collection?category=accessories'},
+  { label: 'Custom Apparel',           route: '/collection?category=apparel'    },
+  { label: 'Uniform & Workwear',       route: '/collection?category=uniforms'   },
+  { label: 'Sportswear & Activewear',  route: '/collection?category=sportswear' },
 ];
 
 const PLATFORM = [
   { label: 'Master Showroom',  route: '/collection' },
-  { label: 'Batch Checkout',   route: '/checkout'   },
+  { label: 'Inquiry Cart',     route: '/checkout'   },
+  { label: 'Download Catalog', href: '/assets/grey_textile_workwear_catalog.pdf', isDownload: true },
   { label: 'Home',             route: '/'           },
 ];
 
 const CONNECT = [
+  { label: 'WhatsApp Chat', href: 'https://wa.me/923152262430?text=Hi!%20I\'m%20interested%20in%20initiating%20a%20B2B%20apparel%20inquiry.' },
   { label: 'Email', href: 'mailto:info@greytextileandmerchendise.com' },
-  { label: 'Website',      href: 'https://www.greytextileandmerchendise.com'  },
   { label: 'Instagram',    href: 'https://www.instagram.com/grey_textile?utm_source=qr&igsh=dWF4NmdyeGN1NXV2' },
   { label: 'LinkedIn',     href: 'https://www.linkedin.com/company/grey-textile-merchandise-pvt-ltd' }, 
 ];
@@ -127,17 +127,27 @@ const Footer = () => {
               Platform
             </h4>
             <ul className="space-y-3">
-              {PLATFORM.map(({ label, route }) => (
+              {PLATFORM.map(({ label, route, href, isDownload }) => (
                 <li key={label}>
-                  <span
-                    className={linkCls}
-                    onClick={() => go(route)}
-                    role="link"
-                    tabIndex={0}
-                    onKeyDown={(e) => e.key === 'Enter' && go(route)}
-                  >
-                    {label}
-                  </span>
+                  {route ? (
+                    <span
+                      className={linkCls}
+                      onClick={() => go(route)}
+                      role="link"
+                      tabIndex={0}
+                      onKeyDown={(e) => e.key === 'Enter' && go(route)}
+                    >
+                      {label}
+                    </span>
+                  ) : (
+                    <a
+                      href={href}
+                      download={isDownload ? true : undefined}
+                      className={linkCls}
+                    >
+                      {label}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>

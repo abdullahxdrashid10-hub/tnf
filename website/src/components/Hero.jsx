@@ -46,15 +46,21 @@ const Hero = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.6 }}
-            className="w-full sm:w-auto"
+            className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto"
           >
-            {/* 🎯 SWITCHED: Swapped traditional <a> anchor for dynamic <Link to="/collection"> router navigation to master hub */}
             <Link
               to="/collection"
               className="inline-block w-full sm:w-auto px-8 sm:px-10 py-3.5 sm:py-4 bg-[#B87333] hover:bg-[#A05A22] text-[#1A1A1A] text-xs font-bold tracking-[0.2em] uppercase rounded-sm transition-all text-center shadow-lg transform hover:-translate-y-0.5"
             >
               Explore Collection
             </Link>
+            <a
+              href="/assets/grey_textile_workwear_catalog.pdf"
+              download
+              className="inline-block w-full sm:w-auto px-8 sm:px-10 py-3.5 sm:py-4 border border-[#B87333]/40 hover:border-[#B87333] text-[#FAF7F2] hover:text-[#B87333] text-xs font-bold tracking-[0.2em] uppercase rounded-sm transition-all text-center shadow-lg transform hover:-translate-y-0.5 bg-transparent"
+            >
+              Download Catalog
+            </a>
           </motion.div>
         </div>
 

@@ -21,6 +21,7 @@ const Navbar = () => {
     { name: 'Collection', id: 'collection', isRoute: true, path: '/collection' },
     { name: 'Philosophy', id: 'Philosophy', isRoute: false, path: '#Philosophy' },
     { name: 'Process', id: 'process', isRoute: false, path: '#process' },
+    { name: 'Catalog (PDF)', id: 'catalog', isRoute: false, path: '/assets/grey_textile_workwear_catalog.pdf', isExternal: true },
     { name: 'Contact', id: 'contact', isRoute: false, path: '#contact' },
   ];
 
@@ -46,7 +47,7 @@ const Navbar = () => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 200;
       for (const link of NAV_LINKS) {
-        if (link.isRoute) continue;
+        if (link.isRoute || link.isExternal) continue;
         const el = document.getElementById(link.id);
         if (el && scrollPosition >= el.offsetTop && scrollPosition < el.offsetTop + el.offsetHeight) {
           setActiveId(link.id);
@@ -59,6 +60,10 @@ const Navbar = () => {
   }, [location.pathname]);
 
   const handleNavClick = (e, link) => {
+    if (link.isExternal) {
+      setIsMobileMenuOpen(false);
+      return; // allow browser default download
+    }
     e.preventDefault();
     setIsMobileMenuOpen(false);
     if (link.isRoute) {
@@ -127,6 +132,20 @@ const Navbar = () => {
         <div className="hidden lg:flex items-center gap-8 ml-auto">
           {NAV_LINKS.map((link) => {
             const isActive = activeId === link.id;
+            if (link.isExternal) {
+              return (
+                <div key={link.id} className="relative py-1">
+                  <a
+                    href={link.path}
+                    download
+                    className="text-[10px] uppercase tracking-[0.2em] hover:text-[#B87333] transition-colors block font-semibold"
+                    style={{ color: 'rgba(250, 247, 242, 0.7)' }}
+                  >
+                    {link.name}
+                  </a>
+                </div>
+              );
+            }
             return (
               <div key={link.id} className="relative py-1">
                 <a
@@ -152,14 +171,14 @@ const Navbar = () => {
           <motion.button 
             onClick={() => navigate('/checkout')}
             className="relative p-2 text-[#FAF7F2]/70 hover:text-[#B87333] transition-colors cursor-pointer flex items-center gap-1.5 ml-2 bg-transparent border-none outline-none"
-            title="View Procurement Manifest"
+            title="View Inquiry Cart"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
             </svg>
-            <span className="text-[10px] uppercase font-bold tracking-widest">Order</span>
+            <span className="text-[10px] uppercase font-bold tracking-widest">Inquiry Cart</span>
             
             <AnimatePresence>
               {liveCount > 0 && (
@@ -228,6 +247,25 @@ const Navbar = () => {
           >
             {NAV_LINKS.map((link, i) => {
               const isActive = activeId === link.id;
+              if (link.isExternal) {
+                return (
+                  <motion.div key={link.id} custom={i} variants={mobileLinkVariants}>
+                    <a
+                      href={link.path}
+                      download
+                      onClick={(e) => handleNavClick(e, link)}
+                      className="flex items-center justify-between px-3 py-3 text-[11px] uppercase tracking-widest font-semibold transition-colors duration-200 rounded-sm"
+                      style={{
+                        color: 'rgba(250, 247, 242, 0.8)',
+                        backgroundColor: 'transparent',
+                        borderLeft: '2px solid transparent'
+                      }}
+                    >
+                      {link.name}
+                    </a>
+                  </motion.div>
+                );
+              }
               return (
                 <motion.div key={link.id} custom={i} variants={mobileLinkVariants}>
                   <a

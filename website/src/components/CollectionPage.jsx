@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { catalogData, getProductColorImage, getFallbackApparelImage } from './CatalogData';
+import { catalogData, getProductColorImage, getFallbackApparelImage, GLOBAL_MOQ } from './CatalogData';
 import { useCart } from './CartContext';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
@@ -114,6 +114,7 @@ export default function CollectionPage() {
   // ── Live products from DB ───────────────────────────────────────────────
   const [products,  setProducts]  = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeSubCategory, setActiveSubCategory] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -141,6 +142,7 @@ export default function CollectionPage() {
 
   // ── Set URL param on tab click ────────────────────────────────────────────
   function handleTabClick(param) {
+    setActiveSubCategory(null);
     if (param === null) {
       setSearchParams({});
     } else {
@@ -158,6 +160,11 @@ export default function CollectionPage() {
       results = results.filter((p) => p.category === activeCategory);
     }
 
+    // Subcategory filter from state
+    if (activeSubCategory) {
+      results = results.filter((p) => p.subCategory === activeSubCategory);
+    }
+
     // Text search
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -169,7 +176,17 @@ export default function CollectionPage() {
       );
     }
     return results;
-  }, [activeCategory, searchQuery, products]);
+  }, [activeCategory, activeSubCategory, searchQuery, products]);
+
+  // Unique subcategories for active main category
+  const availableSubCategories = useMemo(() => {
+    let results = products;
+    if (activeCategory) {
+      results = results.filter((p) => p.category === activeCategory);
+    }
+    const set = new Set(results.map(p => p.subCategory));
+    return Array.from(set).filter(Boolean);
+  }, [activeCategory, products]);
 
   // ── Page title derived from active param ─────────────────────────────────
   const pageTitle = activeCategory ?? 'Full Collection Directory';
@@ -199,7 +216,7 @@ export default function CollectionPage() {
           <div className="mt-4 w-10 h-px" style={{ backgroundColor: '#B87333', opacity: 0.65 }} />
           <p className="mt-4 text-xs font-light"
              style={{ color: '#FAF7F2', opacity: 0.38 }}>
-            {filtered.length} items · bulk procurement &amp; corporate customization available
+            {filtered.length} items · MOQ: {GLOBAL_MOQ} pcs/design · bulk procurement &amp; corporate customization available
           </p>
         </motion.div>
       </section>
@@ -287,6 +304,45 @@ export default function CollectionPage() {
         </div>
       </div>
 
+      {/* ── Sub-Categories Sub-bar ────────────────────────────────────────── */}
+      {availableSubCategories.length > 0 && (
+        <div
+          className="w-full bg-[#151515] py-2.5 border-b border-[#B87333]/5 sticky top-[118px] sm:top-[115px] z-10"
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 flex items-center gap-2 overflow-x-auto scrollbar-none py-1">
+            <span className="text-[9px] uppercase tracking-widest text-[#FAF7F2]/30 mr-2 font-semibold shrink-0">Filter:</span>
+            <button
+              onClick={() => setActiveSubCategory(null)}
+              className="px-3.5 py-1 rounded-full text-[9px] uppercase tracking-wider font-semibold transition-all duration-200"
+              style={{
+                backgroundColor: activeSubCategory === null ? '#B87333' : 'rgba(255,255,255,0.03)',
+                color: activeSubCategory === null ? '#1A1A1A' : 'rgba(250,247,242,0.6)',
+                border: '1px solid rgba(184,115,51,0.15)',
+              }}
+            >
+              All
+            </button>
+            {availableSubCategories.map((sub) => {
+              const isSubActive = activeSubCategory === sub;
+              return (
+                <button
+                  key={sub}
+                  onClick={() => setActiveSubCategory(sub)}
+                  className="px-3.5 py-1 rounded-full text-[9px] uppercase tracking-wider font-semibold transition-all duration-200 shrink-0"
+                  style={{
+                    backgroundColor: isSubActive ? '#B87333' : 'rgba(255,255,255,0.03)',
+                    color: isSubActive ? '#1A1A1A' : 'rgba(250,247,242,0.6)',
+                    border: '1px solid rgba(184,115,51,0.15)',
+                  }}
+                >
+                  {sub}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ── Product Grid ──────────────────────────────────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8 py-14">
         <AnimatePresence mode="wait">
@@ -318,7 +374,7 @@ export default function CollectionPage() {
         <div className="pt-8" style={{ borderTop: '1px solid rgba(184,115,51,0.1)' }}>
           <p className="text-[9px] tracking-[0.22em] font-light"
              style={{ color: '#FAF7F2', opacity: 0.2 }}>
-            ALL PRICING IS PER UNIT AT MINIMUM ORDER QUANTITY &nbsp;·&nbsp; CUSTOM BRANDING AVAILABLE ACROSS ALL LINES
+            ALL DESIGN SPECIFICATIONS &amp; DETAILS PROCESSED VIA CUSTOMIZED B2B RFQ QUOTATION &nbsp;·&nbsp; CUSTOM BRANDING AVAILABLE ACROSS ALL LINES
           </p>
         </div>
       </section>
@@ -433,12 +489,9 @@ function ProductCard({ product, index }) {
           {product.name}
         </h2>
 
-        {/* Price + unit */}
-        <p className="text-sm font-light mb-3" style={{ color: '#B87333' }}>
-          {product.price}
-          <span className="text-[10px] ml-1 font-light" style={{ color: '#FAF7F2', opacity: 0.3 }}>
-            / unit
-          </span>
+        {/* MOQ Tag */}
+        <p className="text-[10px] font-mono tracking-wider mb-3" style={{ color: '#B87333' }}>
+          MOQ: <span style={{ color: '#FAF7F2', opacity: 0.85 }}>{GLOBAL_MOQ} units</span>
         </p>
 
         {/* ── Color finish selector ─────────────────────────────────────── */}

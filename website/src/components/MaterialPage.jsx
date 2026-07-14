@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { catalogData, getProductColorImage, getFallbackApparelImage } from './CatalogData';
+import { catalogData, getProductColorImage, getFallbackApparelImage, GLOBAL_MOQ } from './CatalogData';
 import { useCart } from './CartContext';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
@@ -329,13 +329,10 @@ const ProductCard = ({ product }) => {
           {product.name}
         </h3>
 
-        {/* Price */}
-        <span className="text-xs font-mono block mb-3 font-semibold" style={{ color: '#B87333' }}>
-          {product.price}
-          <span className="text-[10px] ml-1 font-light" style={{ color: '#FAF7F2', opacity: 0.3 }}>
-            / unit
-          </span>
-        </span>
+        {/* MOQ Tag */}
+        <p className="text-[10px] font-mono tracking-wider mb-3" style={{ color: '#B87333' }}>
+          MOQ: <span style={{ color: '#FAF7F2', opacity: 0.85 }}>{GLOBAL_MOQ} units</span>
+        </p>
 
         {/* Description */}
         <p
