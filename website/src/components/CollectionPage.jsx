@@ -360,24 +360,34 @@ function ProductCard({ product, index }) {
         style={{ border: '1px solid rgba(184,115,51,0.05)' }}
       >
         {/* Product thumbnail or placeholder */}
-        {getProductColorImage(product, selectedColor) || product.image ? (
-          <img
-            src={getProductColorImage(product, selectedColor) || product.image}
-            alt={`${product.name} - ${selectedColor}`}
-            className="w-full h-full object-cover transition-all duration-500 ease-out group-hover:scale-105 group-hover:opacity-90"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#121212]">
-            <span className="text-[20px] mb-1.5 text-[#B87333]/40 font-mono">▧</span>
-            <span className="text-[10px] tracking-[0.25em] font-semibold text-[#FAF7F2]/70 uppercase">
-              {selectedColor}
-            </span>
-            <span className="text-[7.5px] tracking-[0.18em] font-light text-[#B87333]/80 uppercase mt-1">
-              IMAGE COMING SOON
-            </span>
-          </div>
-        )}
+        {(() => {
+          const colorImg = getProductColorImage(product, selectedColor);
+          const hasColorImg = colorImg && !colorImg.includes('picsum.photos') && !colorImg.includes('unsplash.com');
+          const hasDefaultImg = product.image && !product.image.includes('picsum.photos') && !product.image.includes('unsplash.com');
+          
+          if (hasColorImg || hasDefaultImg) {
+            return (
+              <img
+                src={hasColorImg ? colorImg : product.image}
+                alt={`${product.name} - ${selectedColor}`}
+                className="w-full h-full object-cover transition-all duration-500 ease-out group-hover:scale-105 group-hover:opacity-90"
+                loading="lazy"
+              />
+            );
+          }
+          
+          return (
+            <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-[#121212]">
+              <span className="text-[20px] mb-1.5 text-[#B87333]/40 font-mono">▧</span>
+              <span className="text-[10px] tracking-[0.25em] font-semibold text-[#FAF7F2]/70 uppercase">
+                {selectedColor}
+              </span>
+              <span className="text-[7.5px] tracking-[0.18em] font-light text-[#B87333]/80 uppercase mt-1">
+                IMAGE COMING SOON
+              </span>
+            </div>
+          );
+        })()}
 
         {/* Gradient overlay */}
         <div
