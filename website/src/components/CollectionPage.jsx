@@ -354,9 +354,9 @@ function ProductCard({ product, index }) {
         style={{ border: '1px solid rgba(184,115,51,0.05)' }}
       >
         {/* Product thumbnail or placeholder */}
-        {getProductColorImage(product, selectedColor) ? (
+        {getProductColorImage(product, selectedColor) || product.image ? (
           <img
-            src={getProductColorImage(product, selectedColor)}
+            src={getProductColorImage(product, selectedColor) || product.image}
             alt={`${product.name} - ${selectedColor}`}
             className="w-full h-full object-cover transition-all duration-500 ease-out group-hover:scale-105 group-hover:opacity-90"
             loading="lazy"

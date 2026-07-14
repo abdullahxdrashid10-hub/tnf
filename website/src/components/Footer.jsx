@@ -36,7 +36,7 @@ const CONNECT = [
   { label: 'Email', href: 'mailto:info@greytextileandmerchendise.com' },
   { label: 'Website',      href: 'https://www.greytextileandmerchendise.com'  },
   { label: 'Instagram',    href: 'https://www.instagram.com/grey_textile?utm_source=qr&igsh=dWF4NmdyeGN1NXV2' },
-  { label: 'LinkedIn',     href: 'https://www.linkedin.com/company/grey-textile-merchandise-pvt-ltd' },
+  { label: 'LinkedIn',     href: 'https://www.linkedin.com/company/grey-textile-merchandise-pvt-ltd' }, 
 ];
 
 // ─── Footer Component ────────────────────────────────────────────────────────
