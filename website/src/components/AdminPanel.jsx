@@ -395,12 +395,204 @@ function ActionButton({ accent, onClick, label }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // § RETAIL SALES LOG VIEW
 // ─────────────────────────────────────────────────────────────────────────────
-function RetailSalesView({ orders, onUpdateStatus }) {
+function OrderDetailDrawer({ order, onClose, onSave }) {
+  const [prices, setPrices] = useState(
+    order.items.reduce((acc, item) => ({
+      ...acc,
+      [item.id]: item.unitPrice !== null ? String(item.unitPrice) : ''
+    }), {})
+  );
+  const [sampleStatus, setSampleStatus] = useState(order.sampleStatus || 'NONE');
+  const [status, setStatus] = useState(order.status || 'PENDING');
+
+  const handleSave = () => {
+    // Format items payload
+    const itemsPayload = order.items.map((item) => ({
+      id: item.id,
+      unitPrice: prices[item.id].trim() !== '' ? parseFloat(prices[item.id]) : null
+    }));
+
+    onSave(order.displayId, {
+      status,
+      sampleStatus,
+      items: itemsPayload
+    });
+    onClose();
+  };
+
+  // WhatsApp follow-up URL builder
+  const phoneDigits = order.client?.phone ? order.client.phone.replace(/\D/g, '') : '';
+  const waTemplate = `Hi ${order.client?.name || ''}, reviewing GTM Inquiry ${order.displayId} for ${order.client?.companyName || ''}. I have generated your initial costing specifications. Let's discuss details here.`;
+  const whatsappUrl = `https://wa.me/${phoneDigits}?text=${encodeURIComponent(waTemplate)}`;
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.5 }}
+        exit={{ opacity: 0 }}
+        className="absolute inset-0 bg-black/60 backdrop-blur-xs"
+      />
+      <motion.div
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '100%' }}
+        transition={{ type: 'spring', damping: 26, stiffness: 220 }}
+        className="relative w-full max-w-lg h-full shadow-2xl flex flex-col p-8 overflow-y-auto font-mono text-left"
+        style={{ backgroundColor: T.bg1, borderLeft: `1px solid ${T.border}` }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex justify-between items-start border-b border-[#1A1A1A] pb-4 mb-6">
+          <div>
+            <span className="text-[9px] uppercase font-bold tracking-[0.25em] text-[#C8783A]">RFQ Details Panel</span>
+            <h2 className="text-xl font-bold tracking-wide text-[#FAF7F2] mt-1">{order.displayId}</h2>
+          </div>
+          <button 
+            onClick={onClose} 
+            className="text-[10px] bg-transparent border-none text-[#FAF7F2]/40 hover:text-white cursor-pointer"
+          >
+            [×] CLOSE
+          </button>
+        </div>
+
+        {/* Client details card */}
+        <div className="p-4 mb-6 border border-[#B87333]/10 bg-white/[0.01] space-y-2 rounded-xs">
+          <p className="text-[8px] uppercase tracking-wider text-[#B87333] font-bold">Buyer Dossier</p>
+          <p className="text-[11px] text-white font-medium">{order.client?.name || '—'} · <span className="text-white/60">{order.client?.companyName || 'No Company'}</span></p>
+          <p className="text-[10px] text-white/50">{order.client?.email || '—'}</p>
+          {order.client?.phone && (
+            <div className="flex items-center gap-3 pt-2">
+              <span className="text-[10px] text-white/50">{order.client.phone}</span>
+              <a 
+                href={whatsappUrl} 
+                target="_blank" 
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#25D366] hover:bg-[#1ebd59] text-black text-[8px] font-bold uppercase tracking-wider rounded-xs transition-colors duration-150 select-none cursor-pointer"
+              >
+                <span>WhatsApp Follow-up</span>
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* Production Specs print wrapper */}
+        <div id="tech-pack-print-section" className="space-y-6 flex-1">
+          {/* Order items quote inputs */}
+          <div>
+            <p className="text-[8px] uppercase tracking-wider text-white/30 font-bold mb-3">Costing Log & Line Items</p>
+            <div className="space-y-3">
+              {order.items.map((item) => (
+                <div key={item.id} className="p-3 bg-[#0C0A08] border border-[#1A1A1A] flex items-center justify-between">
+                  <div className="min-w-0 pr-3">
+                    <p className="text-[10px] font-bold text-white truncate">
+                      {item.qty} pcs · {item.colorName || 'Default'}
+                    </p>
+                    <p className="text-[8px] text-white/40 mt-0.5 uppercase tracking-wider">
+                      Product ID: #{item.productId}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] text-[#C8783A] font-mono">$</span>
+                    <input 
+                      type="number"
+                      step="0.01"
+                      placeholder="Cost / Unit"
+                      value={prices[item.id] || ''}
+                      onChange={(e) => setPrices({ ...prices, [item.id]: e.target.value })}
+                      className="w-20 bg-transparent border-b border-[#FAF7F2]/15 py-1 text-center text-[10px] text-white focus:outline-none focus:border-[#C8783A] font-mono"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Workflow Status Dropdowns */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[8px] uppercase tracking-widest text-[#B87333] font-bold mb-2">Order Status</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="w-full bg-transparent border-b border-[#FAF7F2]/15 py-2 text-[10px] text-white focus:outline-none focus:border-[#B87333] cursor-pointer"
+              >
+                <option value="PENDING" className="bg-[#1A1A1A]">PENDING</option>
+                <option value="PROCESSING" className="bg-[#1A1A1A]">PROCESSING</option>
+                <option value="DISPATCHED" className="bg-[#1A1A1A]">DISPATCHED</option>
+                <option value="CANCELLED" className="bg-[#1A1A1A]">CANCELLED</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[8px] uppercase tracking-widest text-[#B87333] font-bold mb-2">Sample Status</label>
+              <select
+                value={sampleStatus}
+                onChange={(e) => setSampleStatus(e.target.value)}
+                className="w-full bg-transparent border-b border-[#FAF7F2]/15 py-2 text-[10px] text-white focus:outline-none focus:border-[#B87333] cursor-pointer"
+              >
+                <option value="NONE" className="bg-[#1A1A1A]">NONE (No Sample)</option>
+                <option value="PENDING" className="bg-[#1A1A1A]">PENDING REQUEST</option>
+                <option value="IN_PRODUCTION" className="bg-[#1A1A1A]">IN PRODUCTION</option>
+                <option value="DISPATCHED" className="bg-[#1A1A1A]">SAMPLE DISPATCHED</option>
+                <option value="APPROVED" className="bg-[#1A1A1A]">SAMPLE APPROVED</option>
+                <option value="REJECTED" className="bg-[#1A1A1A]">SAMPLE REJECTED</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer actions */}
+        <div className="border-t border-[#1A1A1A] pt-6 mt-6 flex gap-3">
+          <button
+            onClick={() => window.print()}
+            className="flex-1 py-3 border border-[#FAF7F2]/10 hover:border-white text-white text-[9px] font-bold uppercase tracking-wider rounded-xs transition-colors duration-150 cursor-pointer"
+          >
+            Print Tech Pack
+          </button>
+          <button
+            onClick={handleSave}
+            className="flex-1 py-3 bg-[#C8783A] hover:bg-[#A0602D] text-black text-[9px] font-bold uppercase tracking-wider rounded-xs transition-colors duration-150 cursor-pointer"
+          >
+            Save Changes
+          </button>
+        </div>
+      </motion.div>
+      
+      {/* Hidden tech-pack print-only styling container */}
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #tech-pack-print-section, #tech-pack-print-section * {
+            visibility: visible;
+          }
+          #tech-pack-print-section {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            color: black !important;
+            background: white !important;
+          }
+          #tech-pack-print-section input {
+            border: none !important;
+            color: black !important;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function RetailSalesView({ orders, onSaveDetails }) {
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <p className="text-[9px] tracking-widest uppercase" style={{ color: T.muted }}>
-          {orders.length} RETAIL ORDER RECORDS — INTERACTIVE LOG
+          {orders.length} RETAIL INQUIRY RECORDS — CLICK ROW TO COMPOSE QUOTES / ASSIGN SAMPLES
         </p>
         <span
           className="text-[9px] font-bold tracking-widest flex items-center gap-1.5"
@@ -429,20 +621,21 @@ function RetailSalesView({ orders, onUpdateStatus }) {
               borderBottom: `1px solid ${T.border}`,
             }}
           >
-            {['ORDER ID', 'CLIENT FULL NAME', 'EMAIL CONTACT', 'TELEPHONE NUMBER', 'QTY', 'DISPATCH STATUS'].map((h) => (
+            {['INQUIRY ID', 'CLIENT FULL NAME', 'EMAIL CONTACT', 'TELEPHONE NUMBER', 'QTY', 'SAMPLE PHASE'].map((h) => (
               <span key={h}>{h}</span>
             ))}
           </div>
 
           {orders.map((order, i) => {
-            const currentStatus = order.status || 'PENDING';
-            const s = STATUS_PALETTE[currentStatus] ?? { color: T.bright, bg: 'rgba(224,224,224,0.06)' };
+            const currentSampleStatus = order.sampleStatus || 'NONE';
+            const s = STATUS_PALETTE[currentSampleStatus] ?? { color: T.bright, bg: 'rgba(224,224,224,0.06)' };
             
             return (
               <motion.div
                 key={order.id}
                 {...rowVariant(i)}
-                className="grid items-center px-4 py-3 transition-colors duration-100"
+                onClick={() => setSelectedOrder(order)}
+                className="grid items-center px-4 py-3 transition-colors duration-100 cursor-pointer"
                 style={{
                   gridTemplateColumns: '1fr 1.6fr 1.9fr 1.5fr 0.6fr 1.2fr',
                   borderBottom: `1px solid ${T.border}`,
@@ -453,7 +646,7 @@ function RetailSalesView({ orders, onUpdateStatus }) {
                 <span className="text-[8px] font-bold tracking-wider" style={{ color: T.muted }}>
                   {order.displayId}
                 </span>
-                <span className="text-[10px]" style={{ color: T.bright }}>
+                <span className="text-[10px] font-bold" style={{ color: T.bright }}>
                   {order.client?.name || '—'}
                 </span>
                 <span className="text-[9px]" style={{ color: '#8A7060' }}>
@@ -466,23 +659,28 @@ function RetailSalesView({ orders, onUpdateStatus }) {
                   {order.items?.reduce((acc, it) => acc + it.qty, 0) || 0}
                 </span>
                 <div>
-                  <select
-                    value={currentStatus}
-                    onChange={(e) => onUpdateStatus(order.displayId, e.target.value)}
-                    className="text-[8px] font-bold tracking-[0.2em] uppercase px-2 py-1 bg-transparent cursor-pointer outline-none border transition-colors duration-150 font-['Poppins']"
-                    style={{ color: s.color, backgroundColor: s.bg, borderColor: `${s.color}40` }}
+                  <span 
+                    className="text-[7.5px] font-bold tracking-[0.25em] uppercase px-2 py-1 border rounded-xs"
+                    style={{ color: s.color, backgroundColor: s.bg, borderColor: `${s.color}30` }}
                   >
-                    <option value="PENDING" style={{ backgroundColor: T.bg1, color: T.blue.base }}>PENDING</option>
-                    <option value="PROCESSING" style={{ backgroundColor: T.bg1, color: T.amber.base }}>PROCESSING</option>
-                    <option value="DISPATCHED" style={{ backgroundColor: T.bg1, color: T.copper.base }}>DISPATCHED</option>
-                    <option value="CANCELLED" style={{ backgroundColor: T.bg1, color: T.red.base }}>CANCELLED</option>
-                  </select>
+                    {currentSampleStatus}
+                  </span>
                 </div>
               </motion.div>
             );
           })}
         </div>
       </div>
+
+      <AnimatePresence>
+        {selectedOrder && (
+          <OrderDetailDrawer 
+            order={selectedOrder}
+            onClose={() => setSelectedOrder(null)}
+            onSave={onSaveDetails}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -816,20 +1014,20 @@ export default function AdminPanel() {
     }
   }, [authenticatedFetch, appendLog, fetchOverviewStats]);
 
-  const handleUpdateOrderStatus = useCallback(async (orderId, newStatus) => {
+  const handleSaveOrderDetails = useCallback(async (orderId, payload) => {
     try {
-      appendLog('INFO', `Updating status of order ${orderId} to ${newStatus}...`);
-      await authenticatedFetch(`${API_BASE}/api/orders/${orderId}/status`, {
+      appendLog('INFO', `Updating details of order ${orderId}...`);
+      const response = await authenticatedFetch(`${API_BASE}/api/orders/${orderId}/status`, {
         method: 'PATCH',
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify(payload),
       });
       setOrders((prev) =>
-        prev.map((o) => (o.displayId === orderId || o.id === orderId ? { ...o, status: newStatus } : o))
+        prev.map((o) => (o.displayId === orderId || o.id === orderId ? response : o))
       );
-      appendLog('OK', `Successfully updated status of order ${orderId} to ${newStatus}.`);
+      appendLog('OK', `Successfully updated details of order ${orderId}.`);
       fetchOverviewStats();
     } catch (err) {
-      appendLog('ERROR', `Failed to update order status: ${err.message}`);
+      appendLog('ERROR', `Failed to update order details: ${err.message}`);
     }
   }, [authenticatedFetch, appendLog, fetchOverviewStats]);
 
@@ -868,7 +1066,7 @@ export default function AdminPanel() {
     retail: (
       <RetailSalesView
         orders={orders}
-        onUpdateStatus={handleUpdateOrderStatus}
+        onSaveDetails={handleSaveOrderDetails}
       />
     ),
     contracts: <CorporateContractsView contracts={contracts} />,
@@ -1128,6 +1326,49 @@ export default function AdminPanel() {
                 SESSION LIVE
               </p>
             </div>
+          </div>
+
+          {/* Executive Dashboard Section */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
+            {[
+              { 
+                label: 'Costing Queue', 
+                val: stats.b2b?.costingQueue ?? 0, 
+                desc: 'Inquiries awaiting cost review',
+                accent: T.copper.base 
+              },
+              { 
+                label: 'Active Prototyping', 
+                val: stats.b2b?.activeSamples ?? 0, 
+                desc: 'Samples in production/review',
+                accent: T.blue.base 
+              },
+              { 
+                label: 'Sourcing Forecast', 
+                val: stats.b2b?.forecastVolume ?? 0, 
+                desc: 'Total active unit volume',
+                accent: T.bright 
+              }
+            ].map((metric) => (
+              <div 
+                key={metric.label}
+                className="p-5 rounded-sm border border-[#181818] relative overflow-hidden"
+                style={{ backgroundColor: T.bg1, borderLeft: `2px solid ${metric.accent}` }}
+              >
+                <span className="text-[8px] tracking-[0.25em] uppercase" style={{ color: T.muted }}>
+                  {metric.label}
+                </span>
+                <span 
+                  className="block text-2xl font-bold font-mono tracking-wider mt-2.5 tabular-nums" 
+                  style={{ color: metric.accent }}
+                >
+                  {typeof metric.val === 'number' ? String(metric.val).padStart(3, '0') : metric.val}
+                </span>
+                <span className="block text-[8px] tracking-wide mt-2 text-[#8A7060] uppercase">
+                  {metric.desc}
+                </span>
+              </div>
+            ))}
           </div>
 
           <AnimatePresence mode="wait">
