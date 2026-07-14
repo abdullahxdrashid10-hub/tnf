@@ -10,7 +10,7 @@ import { z }                          from 'zod';
 import { prisma }                     from '../plugins/db.js';
 import { nextOrderDisplayId }         from '../lib/ids.js';
 import { BadRequestError }            from '../lib/errors.js';
-import { sendOrderReceiptEmail }      from '../lib/email.js';
+import { sendOrderReceiptEmail, sendAdminNotificationEmail } from '../lib/email.js';
 import { quoteLimit }                 from '../plugins/rateLimit.js';
 
 const publicRoutes: FastifyPluginAsyncZod = async (fastify) => {
@@ -119,14 +119,15 @@ const publicRoutes: FastifyPluginAsyncZod = async (fastify) => {
         },
       });
 
-      // Fire-and-forget receipt email dispatch with resolved product names and colors
-      sendOrderReceiptEmail({
+      // Build shared email payload to prevent drift
+      const emailOrderPayload = {
         displayId:      order.displayId,
         deliveryWindow: order.deliveryWindow,
         client: {
           name:        client.fullName,
           companyName: client.companyName,
           email:       client.email,
+          phone:       client.phone ?? '—',
         },
         items: items.map((it) => ({
           productId: it.productId,
@@ -134,7 +135,14 @@ const publicRoutes: FastifyPluginAsyncZod = async (fastify) => {
           colorName: it.colorName,
           qty:       it.qty,
         })),
-      }).catch((err) => console.error('Receipt email trigger failed:', err));
+      };
+
+      // Fire-and-forget receipt and admin emails in parallel
+      sendOrderReceiptEmail(emailOrderPayload)
+        .catch((err) => console.error('Receipt email trigger failed:', err));
+
+      sendAdminNotificationEmail(emailOrderPayload)
+        .catch((err) => console.error('Admin notification trigger failed:', err));
 
       // Return the confirmed order ID and a human-readable tracking reference
       return reply.status(201).send({

@@ -10,17 +10,22 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const BRAND_EMAIL    = process.env.BRAND_EMAIL || 'orders@gtm-textile.com'; // Change to your verified Hostinger email later
 
 interface EmailPayload {
-  to: string;
+  to: string | string[];
   subject: string;
   html: string;
 }
 
 // Low-level sender function
 async function sendEmail({ to, subject, html }: EmailPayload) {
+  const toStr = Array.isArray(to) ? to.join(', ') : to;
+
   if (!RESEND_API_KEY) {
-    console.log(`[EMAIL SIMULATOR] To: ${to} | Subject: ${subject}`);
+    const link = html.match(/href="([^"]+)"/)?.[1] || 'None';
+    console.log(`[EMAIL SIMULATOR] To: ${toStr} | Subject: ${subject} | Link: ${link}`);
     return;
   }
+
+  const toList = Array.isArray(to) ? to : [to];
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000); // 5-second timeout protect
@@ -35,7 +40,7 @@ async function sendEmail({ to, subject, html }: EmailPayload) {
       },
       body: JSON.stringify({
         from: `GTM Operations <${BRAND_EMAIL}>`,
-        to:   [to],
+        to:   toList,
         subject,
         html,
       }),
@@ -137,6 +142,75 @@ export async function sendOrderStatusUpdateEmail(order: any, newStatus: string) 
   await sendEmail({
     to:      order.client.email,
     subject: `GTM Order Status Update — ${newStatus} [${order.displayId}]`,
+    html,
+  });
+}
+
+// ── Send alert to admins when a new quote request is submitted ─────────────
+export async function sendAdminNotificationEmail(order: any) {
+  const adminEmailVar = process.env.ADMIN_NOTIFICATION_EMAIL || '';
+  if (!adminEmailVar.trim()) {
+    console.warn('[ADMIN NOTIF SKIPPED] No ADMIN_NOTIFICATION_EMAIL configured.');
+    return;
+  }
+
+  const adminEmails = adminEmailVar
+    .split(',')
+    .map((e) => e.trim())
+    .filter(Boolean);
+
+  if (adminEmails.length === 0) {
+    console.warn('[ADMIN NOTIF SKIPPED] No valid admin emails resolved from variable.');
+    return;
+  }
+
+  const itemsList = order.items
+    .map((it: any) => `<li><strong>${it.name || 'Product'}</strong> (${it.colorName || 'Default'}) — Qty: ${it.qty}</li>`)
+    .join('');
+
+  const adminPanelUrl = `${config.FRONTEND_ORIGIN}/admin`;
+
+  const html = `
+    <div style="font-family: 'Poppins', sans-serif; background-color: #100D0B; color: #EDE0D4; padding: 40px; max-width: 600px; margin: auto; border: 1px solid #C8783A;">
+      <h2 style="color: #C8783A; border-bottom: 1px solid #2C2218; padding-bottom: 10px; font-weight: 300; letter-spacing: 2px;">
+        GTM // ADMIN ALERT
+      </h2>
+      <p>A new quotation request has been registered on the storefront.</p>
+      
+      <div style="background-color: #181310; padding: 20px; border: 1px solid #2C2218; margin: 20px 0;">
+        <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #5A4A40; letter-spacing: 1px;">Tracking Reference</p>
+        <h3 style="margin: 5px 0; color: #C8783A; font-family: monospace;">${order.displayId}</h3>
+        
+        <p style="margin: 15px 0 5px 0; font-size: 11px; text-transform: uppercase; color: #5A4A40; letter-spacing: 1px;">Buyer Dossier</p>
+        <p style="margin: 5px 0;"><strong>Name:</strong> ${order.client.name}</p>
+        <p style="margin: 5px 0;"><strong>Company:</strong> ${order.client.companyName || '—'}</p>
+        <p style="margin: 5px 0;"><strong>Email:</strong> ${order.client.email}</p>
+        <p style="margin: 5px 0;"><strong>Phone:</strong> ${order.client.phone || '—'}</p>
+
+        <p style="margin: 15px 0 5px 0; font-size: 11px; text-transform: uppercase; color: #5A4A40; letter-spacing: 1px;">Timeline Spec</p>
+        <p style="margin: 0;">${order.deliveryWindow || 'Flexible Delivery'}</p>
+      </div>
+
+      <h4 style="color: #C8783A; font-weight: 300;">Requested Manifest Items:</h4>
+      <ul style="padding-left: 20px; line-height: 1.6;">
+        ${itemsList}
+      </ul>
+
+      <div style="margin-top: 30px; text-align: center;">
+        <a href="${adminPanelUrl}" style="background-color: #C8783A; color: #100D0B; padding: 12px 24px; text-decoration: none; font-weight: bold; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; display: inline-block; border-radius: 2px;">
+          [ OPEN ADMIN SHELL ]
+        </a>
+      </div>
+
+      <p style="font-size: 12px; color: #5A4A40; margin-top: 30px; border-top: 1px solid #2C2218; padding-top: 20px; text-align: center;">
+        GTM Command Dashboard Notification Hub
+      </p>
+    </div>
+  `;
+
+  await sendEmail({
+    to:      adminEmails,
+    subject: `[NEW RFQ INQUIRY] Action Required — ${order.displayId}`,
     html,
   });
 }
