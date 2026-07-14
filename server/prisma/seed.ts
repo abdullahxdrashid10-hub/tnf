@@ -203,12 +203,19 @@ async function main() {
     { email: 'aman@gtm-admin.com',  name: 'Aman'  },
     { email: 'yazir@gtm-admin.com', name: 'Yazir' },
   ];
-  const sharedPasswordHash = await hashPassword('gtmadmin-2026');
+
+  if (process.env.NODE_ENV === 'production' && !process.env.INITIAL_OPERATOR_PASSWORD) {
+    console.error('❌ ERROR: INITIAL_OPERATOR_PASSWORD must be configured in production!');
+    process.exit(1);
+  }
+
+  const defaultPassword = process.env.INITIAL_OPERATOR_PASSWORD || 'gtmadmin-2026';
+  const sharedPasswordHash = await hashPassword(defaultPassword);
 
   for (const op of OPERATORS) {
     await prisma.user.upsert({
       where:  { email: op.email },
-      update: { passwordHash: sharedPasswordHash, role: 'SUPER_ADMIN' },
+      update: { role: 'SUPER_ADMIN' }, // Protect active passwords from resets on startup
       create: { email: op.email, passwordHash: sharedPasswordHash, role: 'SUPER_ADMIN' },
     });
     console.log(`  ✓ Operator upserted — ${op.name} <${op.email}>`);
