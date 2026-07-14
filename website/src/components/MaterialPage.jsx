@@ -336,12 +336,26 @@ const ProductCard = ({ product }) => {
 
         {/* Description */}
         <p
-          className="text-[11px] font-light leading-relaxed tracking-wide antialiased mb-4"
+          className="text-[11px] font-light leading-relaxed tracking-wide antialiased mb-3 text-left"
           style={{ color: 'rgba(250,247,242,0.45)' }}
         >
           Premium wholesale customizable {product.name.toLowerCase()} production layout
-          tailored for commercial batch deployments.
+          tailored for commercial B2B batch deployments.
         </p>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2 pt-2.5 border-t border-[#B87333]/15 mt-2.5 mb-4 text-[8px] font-mono text-[#FAF7F2]/40 uppercase tracking-wider text-left">
+          <div>
+            <span className="text-[#B87333]">Specs:</span> Premium Weave
+          </div>
+          <div>
+            <span className="text-[#B87333]">Weight:</span> 180 - 280 GSM
+          </div>
+          <div>
+            <span className="text-[#B87333]">Lead Time:</span> 15-25 Days
+          </div>
+          <div>
+            <span className="text-[#B87333]">Methods:</span> Sublimation / Embroidered
+          </div>
+        </div>
 
         {/* ── Color finish selector ──────────────────────────────────────────── */}
         <div className="mb-4">

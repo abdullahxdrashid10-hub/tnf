@@ -53,6 +53,32 @@ const Footer = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
+        {/* ── Trust Row: Factory Compliance & Certifications ────────────────── */}
+        <div 
+          className="grid grid-cols-2 md:grid-cols-4 gap-6 pb-12 mb-16"
+          style={{ borderBottom: '1px solid rgba(184,115,51,0.1)' }}
+        >
+          {[
+            { name: 'WRAP COMPLIANT', desc: 'Social & Ethical Compliance' },
+            { name: 'OEKO-TEX STANDARD 100', desc: 'Tested for Harmful Chemicals' },
+            { name: 'ISO 9001:2015', desc: 'Quality Management Certified' },
+            { name: 'SEDEX AUDITED', desc: 'Ethical Supply Chain standards' }
+          ].map((cert) => (
+            <div 
+              key={cert.name} 
+              className="flex flex-col items-start text-left p-4 rounded-sm border border-[#B87333]/10 bg-white/[0.01]"
+              style={{ borderLeft: '2px solid #B87333' }}
+            >
+              <span className="text-[10px] font-mono font-bold tracking-widest text-[#FAF7F2]">
+                {cert.name}
+              </span>
+              <span className="text-[8px] font-light tracking-wide text-[#FAF7F2]/40 mt-1 uppercase">
+                {cert.desc}
+              </span>
+            </div>
+          ))}
+        </div>
+
         {/* ── Main grid ──────────────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 mb-16">
 

@@ -6,6 +6,7 @@ import Hero from './components/Hero';
 import Philosophy from './components/Philosophy';
 import Catalog from './components/Catalog';
 import HowItWorks from './components/HowItWorks';
+import SourcingFAQ from './components/SourcingFAQ';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import MaterialPage from './components/MaterialPage';
@@ -20,6 +21,7 @@ const HomeShowroom = () => (
     <Philosophy />
     <Catalog />
     <HowItWorks />
+    <SourcingFAQ />
     <Contact />
   </>
 );

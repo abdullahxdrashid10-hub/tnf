@@ -594,7 +594,7 @@ function ProductCard({ product, index }) {
                   animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                   exit={{ opacity: 0, y: -6, filter: 'blur(4px)' }}
                   transition={{ duration: 0.3, delay: 0.07, ease: [0.22, 1, 0.36, 1] }}
-                  className="mb-2 px-3 py-2.5 text-[9px] leading-relaxed tracking-wide"
+                  className="mb-2 px-3 py-3 text-[9px] leading-relaxed tracking-wide text-left"
                   style={{
                     color:           'rgba(237,224,212,0.75)',
                     backgroundColor: 'rgba(10,8,6,0.82)',
@@ -602,7 +602,21 @@ function ProductCard({ product, index }) {
                     borderTop:       'none',
                   }}
                 >
-                  {product.description || 'No description available.'}
+                  <p className="mb-3 leading-relaxed">{product.description || 'No description available.'}</p>
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-2 pt-2.5 border-t border-[#B87333]/15 mt-2.5 text-[8px] font-mono text-[#FAF7F2]/40 uppercase tracking-wider">
+                    <div>
+                      <span className="text-[#B87333]">Specs:</span> Premium Weave
+                    </div>
+                    <div>
+                      <span className="text-[#B87333]">Weight:</span> 180 - 280 GSM
+                    </div>
+                    <div>
+                      <span className="text-[#B87333]">Lead Time:</span> 15-25 Days
+                    </div>
+                    <div>
+                      <span className="text-[#B87333]">Methods:</span> Sublimation / Embroidered
+                    </div>
+                  </div>
                 </motion.div>
               </motion.div>
             )}

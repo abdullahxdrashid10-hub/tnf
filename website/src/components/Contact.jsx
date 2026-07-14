@@ -4,6 +4,7 @@ import { WHATSAPP_LINK } from './CatalogData';
 
 // ─── Inquiry type options (replaces single-purpose product slider) ─────────────
 const INQUIRY_TYPES = [
+  { value: 'swatch_request', label: 'Fabric Swatch / Sample Request' },
   { value: 'general',      label: 'General Sourcing'         },
   { value: 'custom',       label: 'Custom Apparel'           },
   { value: 'bulk',         label: 'Bulk Order Request'       },
