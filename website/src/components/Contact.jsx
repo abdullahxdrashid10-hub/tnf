@@ -12,20 +12,15 @@ const INQUIRY_TYPES = [
 ];
 
 // ─── Volume tier logic — preserved exactly from original ──────────────────────
-const getTierDetails = (vol) => {
-  if (vol < 100)  return { title: 'Bespoke Sample Batch',  perk: 'Standard Sampling Setup'                           };
-  if (vol < 500)  return { title: 'Mid-Tier Team Fleet',   perk: 'Custom Branding Included'                          };
-  return               { title: 'Enterprise Mass Run',    perk: 'Dedicated Logistics Tier & Maximum Scaling Discounts' };
-};
-
-// ─── Shared underline field class string ──────────────────────────────────────
+// ─── Shared premium field class string ────────────────────────────────────────
 const fieldBase =
-  'w-full bg-transparent border-b border-[#B87333]/20 py-3 text-[#FAF7F2] ' +
-  'text-sm font-light placeholder-[#FAF7F2]/25 font-serif outline-none ' +
-  'transition-all duration-300 focus:border-[#B87333]';
+  'w-full bg-[#1E1A18]/50 border border-[#B87333]/15 rounded-lg px-4 py-3.5 text-[#FAF7F2] ' +
+  'text-sm font-light placeholder-[#FAF7F2]/20 outline-none ' +
+  'transition-all duration-300 focus:border-[#B87333]/60 focus:bg-[#1E1A18]/80 ' +
+  'focus:ring-1 focus:ring-[#B87333]/30';
 
 const labelBase =
-  'block text-[9px] uppercase tracking-[0.25em] font-bold text-[#FAF7F2]/40 mb-2';
+  'block text-[9px] uppercase tracking-[0.25em] font-bold text-[#FAF7F2]/45 mb-2 font-mono';
 
 // ─── Framer variants ──────────────────────────────────────────────────────────
 const panelVariants = {
@@ -41,36 +36,36 @@ const leftVariants = {
 // ─────────────────────────────────────────────────────────────────────────────
 const Contact = () => {
 
-  // ── Preserved state hooks ─────────────────────────────────────────────────
-  const [estVolume,           setEstVolume]           = useState(250);
+  // ── State hooks ──
   const [selectedCollection,  setSelectedCollection]  = useState('apparel');
+  const [inquiryType,         setInquiryType]         = useState('general');
+  const [name,                setName]                = useState('');
+  const [email,               setEmail]               = useState('');
+  const [message,             setMessage]             = useState('');
+  const [submitted,           setSubmitted]           = useState(false);
 
-  // ── New state for extended fields ─────────────────────────────────────────
-  const [inquiryType,  setInquiryType]  = useState('general');
-  const [name,         setName]         = useState('');
-  const [email,        setEmail]        = useState('');
-  const [message,      setMessage]      = useState('');
-  const [submitted,    setSubmitted]    = useState(false);
-
-  const currentTier = getTierDetails(estVolume);
-
-  // ── Submit handler — preserved logic, extended for new fields ────────────
+  // ── Submit handler ──
   function handleSubmit(e) {
     e.preventDefault();
-    // Submission logic placeholder — hook into your backend / email service here
+    if (!name.trim() || !email.trim()) return;
     setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 4000);
+    setTimeout(() => {
+      setSubmitted(false);
+      setName('');
+      setEmail('');
+      setMessage('');
+    }, 4000);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <section
       id="contact"
-      className="py-32 bg-[#1A1A1A] relative selection:bg-[#B87333]/30 overflow-hidden"
+      className="py-32 bg-[#100D0B] relative selection:bg-[#B87333]/30 overflow-hidden"
     >
       {/* ── Ambient structural lines ────────────────────────────────────────── */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-        <div className="w-full h-full opacity-[0.03] flex justify-around max-w-7xl mx-auto px-8">
+        <div className="w-full h-full opacity-[0.02] flex justify-around max-w-7xl mx-auto px-8">
           <div className="w-[1px] h-full bg-[#FAF7F2]" />
           <div className="w-[1px] h-full bg-[#FAF7F2]" />
           <div className="w-[1px] h-full bg-[#FAF7F2]" />
@@ -81,7 +76,7 @@ const Contact = () => {
       <div
         className="absolute right-0 top-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none"
         style={{
-          background: 'radial-gradient(circle, rgba(184,115,51,0.05) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(184,115,51,0.03) 0%, transparent 70%)',
         }}
         aria-hidden="true"
       />
@@ -177,25 +172,27 @@ const Contact = () => {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="bg-[#1A1A1A]/40 backdrop-blur-xl border border-[#B87333]/15 p-8 sm:p-12 text-left"
+            className="bg-[#161311] border border-[#B87333]/15 rounded-2xl p-8 sm:p-12 text-left shadow-2xl shadow-black/60 relative"
           >
             {/* Panel header */}
             <div className="mb-10">
+              <span className="text-[#B87333] text-[9px] font-bold tracking-[0.3em] uppercase block mb-1">
+                SECURE CONCIERGE GATEWAY
+              </span>
               <h3 className="text-2xl font-serif text-[#FAF7F2] mb-2 tracking-wide">
                 Initiate an Inquiry
               </h3>
-              <p className="text-[11px] text-[#FAF7F2]/35 font-light tracking-wide">
-                Complete the form below and our concierge team will respond within
-                24 business hours.
+              <p className="text-[11px] text-[#FAF7F2]/40 font-light tracking-wide leading-relaxed">
+                Complete the configuration below. Our corporate desks will initialize contact within 24 business hours.
               </p>
               {/* Gold rule */}
-              <div className="mt-5 w-10 h-px" style={{ backgroundColor: '#B87333', opacity: 0.6 }} />
+              <div className="mt-5 w-12 h-[1px]" style={{ backgroundColor: '#B87333', opacity: 0.5 }} />
             </div>
 
-            <form className="space-y-8" onSubmit={handleSubmit} noValidate>
+            <form className="space-y-6" onSubmit={handleSubmit} noValidate>
 
               {/* ── Row 1: Name + Email ─────────────────────────────────────── */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className={labelBase}>Corporate Contact</label>
                   <input
@@ -221,94 +218,61 @@ const Contact = () => {
               </div>
 
               {/* ── Row 2: Inquiry Type + Collection Line ───────────────────── */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                {/* Inquiry Type dropdown — replaces the slider */}
+                {/* Inquiry Type dropdown */}
                 <div className="relative">
                   <label className={labelBase}>Inquiry Type</label>
-                  <select
-                    value={inquiryType}
-                    onChange={(e) => setInquiryType(e.target.value)}
-                    className={`${fieldBase} appearance-none cursor-pointer pr-6`}
-                    style={{ color: inquiryType ? '#FAF7F2' : 'rgba(250,247,242,0.25)' }}
-                  >
-                    {INQUIRY_TYPES.map((t) => (
-                      <option
-                        key={t.value}
-                        value={t.value}
-                        className="bg-[#1A1A1A] text-[#FAF7F2]"
-                      >
-                        {t.label}
-                      </option>
-                    ))}
-                  </select>
-                  {/* Dropdown chevron */}
-                  <span
-                    className="absolute right-1 bottom-4 pointer-events-none text-[10px]"
-                    style={{ color: '#B87333', opacity: 0.7 }}
-                  >
-                    ▾
-                  </span>
+                  <div className="relative">
+                    <select
+                      value={inquiryType}
+                      onChange={(e) => setInquiryType(e.target.value)}
+                      className={`${fieldBase} appearance-none cursor-pointer pr-10`}
+                      style={{ color: inquiryType ? '#FAF7F2' : 'rgba(250,247,242,0.25)' }}
+                    >
+                      {INQUIRY_TYPES.map((t) => (
+                        <option
+                          key={t.value}
+                          value={t.value}
+                          className="bg-[#161311] text-[#FAF7F2]"
+                        >
+                          {t.label}
+                        </option>
+                      ))}
+                    </select>
+                    {/* Dropdown chevron */}
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#B87333] opacity-60 text-xs">
+                      ▼
+                    </span>
+                  </div>
                 </div>
 
-                {/* Target Line Selection — preserved from original */}
+                {/* Target Line Selection */}
                 <div className="relative">
                   <label className={labelBase}>Target Line Selection</label>
-                  <select
-                    value={selectedCollection}
-                    onChange={(e) => setSelectedCollection(e.target.value)}
-                    className={`${fieldBase} appearance-none cursor-pointer pr-6`}
-                  >
-                    <option value="apparel"      className="bg-[#1A1A1A] text-[#FAF7F2]">Apparel Collection Range</option>
-                    <option value="uniforms"     className="bg-[#1A1A1A] text-[#FAF7F2]">Uniform &amp; Workwear Division</option>
-                    <option value="sportswear"   className="bg-[#1A1A1A] text-[#FAF7F2]">Sportswear &amp; Performance Line</option>
-                    <option value="hometextiles" className="bg-[#1A1A1A] text-[#FAF7F2]">Home Textiles (Sheets &amp; Towels)</option>
-                  </select>
-                  <span
-                    className="absolute right-1 bottom-4 pointer-events-none text-[10px]"
-                    style={{ color: '#B87333', opacity: 0.7 }}
-                  >
-                    ▾
-                  </span>
+                  <div className="relative">
+                    <select
+                      value={selectedCollection}
+                      onChange={(e) => setSelectedCollection(e.target.value)}
+                      className={`${fieldBase} appearance-none cursor-pointer pr-10`}
+                    >
+                      <option value="apparel"      className="bg-[#161311] text-[#FAF7F2]">Apparel Collection Range</option>
+                      <option value="uniforms"     className="bg-[#161311] text-[#FAF7F2]">Uniform &amp; Workwear Division</option>
+                      <option value="sportswear"   className="bg-[#161311] text-[#FAF7F2]">Sportswear &amp; Performance Line</option>
+                      <option value="hometextiles" className="bg-[#161311] text-[#FAF7F2]">Home Textiles (Sheets &amp; Towels)</option>
+                    </select>
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#B87333] opacity-60 text-xs">
+                      ▼
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              {/* ── Row 3: Volume Slider — preserved exactly ────────────────── */}
-              <div>
-                <div className="flex justify-between items-baseline mb-3">
-                  <label className={`${labelBase} mb-0`}>Target Units Run</label>
-                  <span
-                    className="text-xs font-mono font-bold px-2 py-0.5"
-                    style={{
-                      color: '#B87333',
-                      backgroundColor: 'rgba(184,115,51,0.06)',
-                      border: '1px solid rgba(184,115,51,0.2)',
-                    }}
-                  >
-                    {estVolume === 1000 ? '1,000+ pcs' : `${estVolume} pcs`}
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="50"
-                  max="1000"
-                  step="50"
-                  value={estVolume}
-                  onChange={(e) => setEstVolume(Number(e.target.value))}
-                  className="w-full h-[2px] accent-[#B87333] cursor-pointer mt-1"
-                  style={{ backgroundColor: 'rgba(184,115,51,0.12)' }}
-                />
-                <div className="text-[9px] text-[#FAF7F2]/35 font-mono mt-3 tracking-wide">
-                  {currentTier.title}{' '}
-                  <span className="text-[#B87333]/70">// {currentTier.perk}</span>
-                </div>
-              </div>
-
-              {/* ── Row 4: Inquiry Details textarea ────────────────────────── */}
+              {/* ── Row 3: Inquiry Details textarea ────────────────────────── */}
               <div>
                 <label className={labelBase}>Inquiry Details</label>
                 <textarea
-                  rows={4}
+                  rows={5}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   className={`${fieldBase} resize-none`}
@@ -319,10 +283,10 @@ const Contact = () => {
               {/* ── CTA Button with Framer Motion ────────────────────────────── */}
               <motion.button
                 type="submit"
-                whileHover={{ scale: 1.01, backgroundColor: '#A06228' }}
+                whileHover={{ scale: 1.01, boxShadow: '0 0 20px rgba(184,115,51,0.2)' }}
                 whileTap={{ scale: 0.99 }}
                 transition={{ duration: 0.2, ease: 'easeOut' }}
-                className="w-full py-4 font-serif text-[10px] font-bold tracking-[0.25em] uppercase shadow-xl shadow-black/40 mt-2"
+                className="w-full py-4 rounded-lg font-serif text-[10px] font-bold tracking-[0.25em] uppercase mt-4 transition-colors duration-200"
                 style={{
                   backgroundColor: '#B87333',
                   color: '#1A1A1A',
@@ -339,7 +303,7 @@ const Contact = () => {
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="text-center text-[10px] tracking-widest font-light"
+                  className="text-center text-[10px] tracking-widest font-light mt-4"
                   style={{ color: '#B87333', opacity: 0.8 }}
                 >
                   Our concierge team will contact you within 24 business hours.
