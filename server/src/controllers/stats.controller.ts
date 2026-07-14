@@ -22,6 +22,9 @@ export async function getOverview(
     pendingOrders,
     contractPipeline,
     activeContracts,
+    costingQueueCount,
+    activeSamplesCount,
+    volumeAgg,
   ] = await Promise.all([
     // Product inventory depth
     prisma.product.count({ where: { isActive: true } }),
@@ -43,6 +46,32 @@ export async function getOverview(
     prisma.contract.count({
       where: { isActive: true, status: { notIn: ['COMPLETED', 'CANCELLED'] } },
     }),
+
+    // B2B costing queue: count of orders with at least one unquoted item
+    prisma.retailOrder.count({
+      where: {
+        items: {
+          some: { unitPrice: null }
+        }
+      }
+    }),
+
+    // Active prototyping: count of orders in sample pending/production phase
+    prisma.retailOrder.count({
+      where: {
+        sampleStatus: { in: ['PENDING', 'IN_PRODUCTION'] }
+      }
+    }),
+
+    // Volume sourcing forecast: sum of quantities of all active orders
+    prisma.orderItem.aggregate({
+      _sum: { qty: true },
+      where: {
+        order: {
+          status: { in: ['PENDING', 'PROCESSING'] }
+        }
+      }
+    })
   ]);
 
   return reply.status(200).send({
@@ -62,5 +91,10 @@ export async function getOverview(
       active:        activeContracts,
       pipelineUnits: contractPipeline._sum.unitCount ?? 0,
     },
+    b2b: {
+      costingQueue: costingQueueCount,
+      activeSamples: activeSamplesCount,
+      forecastVolume: volumeAgg._sum.qty ?? 0,
+    }
   });
 }
