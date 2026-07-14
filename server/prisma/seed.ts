@@ -174,70 +174,71 @@ async function syncSequences() {
 async function main() {
   console.log('🌱 Starting GTM seed...');
 
-  // 0 — Clean slate: wipe old products in FK-safe order
-  console.log('  Clearing stale product data...');
-  await prisma.orderItem.deleteMany({});
-  await prisma.retailOrder.deleteMany({});
-  await prisma.product.deleteMany({});
-  console.log('  ✓ Stale data cleared');
+  const productCount = await prisma.product.count();
 
-  // 1 — Seed all 65 products (mirrored from CatalogData.js)
-  console.log(`  Seeding ${CATALOG.length} products...`);
-  for (const p of CATALOG) {
-    const { colors, ...productData } = p;
-    await prisma.product.create({
-      data: {
-        sku:  `seed-${p.localImageName}`,
-        ...productData,
-        colors: { create: colors.map((colorName) => ({ colorName })) },
-      },
-    });
-  }
-  console.log(`  ✓ ${CATALOG.length} products seeded`);
+  if (productCount === 0) {
+    console.log('  Database appears empty. Seeding catalog products...');
+    
+    // 1 — Seed all 65 products (mirrored from CatalogData.js)
+    console.log(`  Seeding ${CATALOG.length} products...`);
+    for (const p of CATALOG) {
+      const { colors, ...productData } = p;
+      await prisma.product.create({
+        data: {
+          sku:  `seed-${p.localImageName}`,
+          ...productData,
+          colors: { create: colors.map((colorName) => ({ colorName })) },
+        },
+      });
+    }
+    console.log(`  ✓ ${CATALOG.length} products seeded`);
 
-  // 2 — Seed clients
-  console.log('  Seeding clients...');
-  for (const c of MOCK_CLIENTS) {
-    await prisma.client.upsert({
-      where:  { email: c.email },
-      create: c,
-      update: c,
-    });
-  }
-  console.log('  ✓ Clients seeded');
+    // 2 — Seed clients
+    console.log('  Seeding clients...');
+    for (const c of MOCK_CLIENTS) {
+      await prisma.client.upsert({
+        where:  { email: c.email },
+        create: c,
+        update: c,
+      });
+    }
+    console.log('  ✓ Clients seeded');
 
-  // 3 — Seed a sample order tied to first client + first product
-  const firstClient  = await prisma.client.findFirst({ where: { email: MOCK_CLIENTS[0]!.email } });
-  const firstProduct = await prisma.product.findFirst({ where: { isActive: true } });
+    // 3 — Seed a sample order tied to first client + first product
+    const firstClient  = await prisma.client.findFirst({ where: { email: MOCK_CLIENTS[0]!.email } });
+    const firstProduct = await prisma.product.findFirst({ where: { isActive: true } });
 
-  if (firstClient && firstProduct) {
-    await prisma.retailOrder.create({
-      data: {
-        displayId: 'ORD-0091',
-        clientId:  firstClient.id,
-        status:    'DISPATCHED',
-        items: {
-          create: {
-            productId: firstProduct.id,
-            qty:       3,
-            unitPrice: firstProduct.priceUsd,
+    if (firstClient && firstProduct) {
+      await prisma.retailOrder.create({
+        data: {
+          displayId: 'ORD-0091',
+          clientId:  firstClient.id,
+          status:    'DISPATCHED',
+          items: {
+            create: {
+              productId: firstProduct.id,
+              qty:       3,
+              unitPrice: firstProduct.priceUsd,
+            },
           },
         },
-      },
-    });
-    console.log('  ✓ Sample order ORD-0091 seeded');
-  }
+      });
+      console.log('  ✓ Sample order ORD-0091 seeded');
+    }
 
-  // 4 — Seed contracts
-  console.log('  Seeding contracts...');
-  for (const c of MOCK_CONTRACTS) {
-    await prisma.contract.upsert({
-      where:  { displayId: c.displayId },
-      create: c,
-      update: c,
-    });
+    // 4 — Seed contracts
+    console.log('  Seeding contracts...');
+    for (const c of MOCK_CONTRACTS) {
+      await prisma.contract.upsert({
+        where:  { displayId: c.displayId },
+        create: c,
+        update: c,
+      });
+    }
+    console.log('  ✓ Contracts seeded');
+  } else {
+    console.log('  Database already has products. Skipping full catalog seed.');
   }
-  console.log('  ✓ Contracts seeded');
 
   // 5 — Seed operator accounts
   const OPERATORS = [
@@ -258,7 +259,7 @@ async function main() {
   // 6 — Sync DB sequences
   await syncSequences();
 
-  console.log('\n✅ Seed complete — database now mirrors CatalogData.js (65 products).');
+  console.log('\n✅ Seed complete.');
 }
 
 main()
