@@ -596,10 +596,15 @@ export const catalogData = [
     category: "Sportswear",
     subCategory: "Teamwear",
     price: "$29.99",
-    image: "https://picsum.photos/seed/soccerjersey/400/300",
+    image: "/assets/football-volleyball-rugby jerseys navy blue.jpeg",
     localImageName: "soccer-jerseys.jpg",
     standardColors: STANDARD_COLORS,
-    colorImages: {},
+    colorImages: {
+      "Navy Blue": "/assets/football-volleyball-rugby jerseys navy blue.jpeg",
+      "Black":     "/assets/football-volleyball-rugby jerseys black.jpeg",
+      "Burgundy":  "/assets/football-volleyball-rugby jerseys burgendy.jpeg",
+      "White":     "/assets/football-volleyball-rugby jerseys white.jpeg",
+    },
     description: "Lightweight moisture-wicking polyester soccer jersey with internal v-neck taping and a ventilated back mesh panel. Engineered for full sublimation printing across the entire body. Complete custom strip design capability for club, national, and academy programs.",
   },
   {
@@ -627,9 +632,7 @@ export const catalogData = [
     localImageName: "rugby-jerseys.jpg",
     standardColors: STANDARD_COLORS,
     colorImages: {
-      "Navy Blue": "/assets/football-volleyball-rugby jerseys navy blue.jpeg",
       "Black":     "/assets/Rugby black.jpeg",
-      "Burgundy":  "/assets/football-volleyball-rugby jerseys burgendy.jpeg",
       "White":     "/assets/Rugby white.jpeg",
     },
     description: "Abrasion-resistant polyester-elastane sublimated rugby jersey in a close athletic fit designed to minimize jersey-grabbing. Reinforced collar and shoulder seams handle scrummaging stress. Full squad customization available with club crest, sponsor branding, and player number.",
