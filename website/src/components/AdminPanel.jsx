@@ -1113,7 +1113,7 @@ export default function AdminPanel() {
  ╚██████╔╝  ██║   ██║ ╚═╝ ██║
   ╚═════╝   ╚═╝   ╚═╝     ╚═╝`}</pre>
           <p className="text-[8px] tracking-[0.45em] mt-3 uppercase" style={{ color: T.muted }}>
-            Gray Textile &amp; Merchandising — Admin Shell v3.0.0
+            Grey Textile &amp; Merchandising — Admin Shell v3.0.0
           </p>
         </div>
 

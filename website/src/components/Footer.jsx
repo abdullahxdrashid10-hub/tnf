@@ -89,7 +89,7 @@ const Footer = () => {
             <div className="mb-6">
               <img
                 src={logo}
-                alt="Gray Textile & Merchandising Logo"
+                alt="Grey Textile & Merchandising Logo"
                 className="h-20 sm:h-24 w-auto object-contain mix-blend-lighten contrast-125 brightness-110 mb-6 block text-left"
               />
             </div>
@@ -114,7 +114,7 @@ const Footer = () => {
                 Global Logistics
               </p>
               <p className="font-mono text-[11px]" style={{ color: 'rgba(250,247,242,0.45)' }}>
-                +92 336 666643  &nbsp;·&nbsp; +92 315 2262430
+                +92 336 6666433  &nbsp;·&nbsp; +92 315 2262430
               </p>
             </div>
           </div>
@@ -256,7 +256,7 @@ const Footer = () => {
             className="text-[9px] tracking-[0.2em] uppercase font-light"
             style={{ color: 'rgba(250,247,242,0.3)' }}
           >
-            &copy; 2026 GRAY TEXTILE &amp; MERCHANDISING. ALL RIGHTS RESERVED.
+            &copy; 2026 GREY TEXTILE &amp; MERCHANDISING. ALL RIGHTS RESERVED.
           </p>
 
           {/* Legal links */}

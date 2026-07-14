@@ -5,12 +5,12 @@
     export const CartProvider = ({ children }) => {
     const [cart, setCart] = useState(() => {
         // Look up cached cart items on browser initialization loops
-        const savedCart = localStorage.getItem('gray_textiles_cart');
+        const savedCart = localStorage.getItem('grey_textiles_cart');
         return savedCart ? JSON.parse(savedCart) : [];
     });
 
     useEffect(() => {
-        localStorage.setItem('gray_textiles_cart', JSON.stringify(cart));
+        localStorage.setItem('grey_textiles_cart', JSON.stringify(cart));
     }, [cart]);
 
     // Adds an item with a specific selected color parameter smoothly

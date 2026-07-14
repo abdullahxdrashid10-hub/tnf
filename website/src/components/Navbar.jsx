@@ -120,11 +120,11 @@ const Navbar = () => {
         >
           <img
             src={logo}
-            alt="Gray Textile & Merchandising Logo"
+            alt="Grey Textile & Merchandising Logo"
             className="h-16 sm:h-20 w-auto object-contain mix-blend-screen contrast-125 brightness-110 block shrink-0"
           />
           <span className="text-[#FAF7F2] font-serif text-[10px] sm:text-xs tracking-[0.25em] uppercase font-semibold border-l border-[#B87333]/30 pl-4 h-5 flex items-center transition-colors duration-300 group-hover:text-[#B87333]">
-            Gray Textile &amp; Merchandising
+            Grey Textile &amp; Merchandising
           </span>
         </div>
         
@@ -167,6 +167,18 @@ const Navbar = () => {
             );
           })}
 
+          {/* Header Action Button */}
+          <motion.a 
+            href="#contact" 
+            onClick={handleQuote}
+            className="ml-2 px-5 py-2.5 bg-[#B87333] text-[#1A1A1A] text-[10px] font-bold tracking-[0.15em] uppercase rounded-sm shadow-lg cursor-pointer select-none"
+            whileHover={{ backgroundColor: '#A06228', scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ duration: 0.18 }}
+          >
+            Get A Quote
+          </motion.a>
+
           {/* Checkout Panel CTA Item */}
           <motion.button 
             onClick={() => navigate('/checkout')}
@@ -194,18 +206,6 @@ const Navbar = () => {
               )}
             </AnimatePresence>
           </motion.button>
-
-          {/* Header Action Button */}
-          <motion.a 
-            href="#contact" 
-            onClick={handleQuote}
-            className="ml-2 px-5 py-2.5 bg-[#B87333] text-[#1A1A1A] text-[10px] font-bold tracking-[0.15em] uppercase rounded-sm shadow-lg cursor-pointer select-none"
-            whileHover={{ backgroundColor: '#A06228', scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ duration: 0.18 }}
-          >
-            Get A Quote
-          </motion.a>
         </div>
 
         {/* Mobile View Row Control Layer */}

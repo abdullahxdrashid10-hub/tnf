@@ -124,7 +124,7 @@ const Contact = () => {
                   Global Logistics Desks
                 </h3>
                 <p className="text-[#FAF7F2]/45 font-mono text-xs leading-relaxed tracking-widest mb-4">
-                  +92 336 666643
+                  +92 336 6666433
                   <br />
                   +92 315 2262430
                 </p>

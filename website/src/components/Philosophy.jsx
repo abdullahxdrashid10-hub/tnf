@@ -33,7 +33,7 @@ const Philosophy = () => {
         
         {/* 🎯 RESPONSIVE TWEAK: text-2xl on phone monitors scaling cleanly up to text-5xl on main computers */}
         <h2 className="text-2xl sm:text-4xl md:text-5xl font-serif text-[#FAF7F2] tracking-wide leading-snug mb-6 sm:mb-8 max-w-4xl mx-auto">
-          The Philosophy Behind Gray Textiles
+          The Philosophy Behind Grey Textiles
         </h2>
         
         {/* 🎯 RESPONSIVE TWEAK: Reduced mb-24 margin down to mb-12 on mobile to pull content closer */}
