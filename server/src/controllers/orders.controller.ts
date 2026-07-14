@@ -33,7 +33,16 @@ export const CreateOrderBody = z.object({
 });
 
 export const UpdateOrderStatusBody = z.object({
-  status: z.enum(['PENDING', 'PROCESSING', 'DISPATCHED', 'CANCELLED']),
+  status:       z.enum(['PENDING', 'PROCESSING', 'DISPATCHED', 'CANCELLED']).optional(),
+  sampleStatus: z.enum(['NONE', 'PENDING', 'IN_PRODUCTION', 'DISPATCHED', 'APPROVED', 'REJECTED']).optional(),
+  items: z
+    .array(
+      z.object({
+        id:        z.number().int().positive(),
+        unitPrice: z.number().nullable(),
+      }),
+    )
+    .optional(),
 });
 
 export const OrderIdParam = z.object({ id: z.string().min(1) });
@@ -41,7 +50,7 @@ export const OrderIdParam = z.object({ id: z.string().min(1) });
 // ── Prisma include shape (reused in all handlers) ─────────────────────────────
 const ORDER_INCLUDE = {
   client: { select: { fullName: true, companyName: true, email: true, phone: true } },
-  items:  { select: { qty: true, productId: true, unitPrice: true } },
+  items:  { select: { id: true, qty: true, productId: true, unitPrice: true, colorName: true } },
 } as const;
 
 // ── Response shaping ──────────────────────────────────────────────────────────
@@ -49,12 +58,12 @@ const ORDER_INCLUDE = {
 // Prisma issues exactly 2 SQL statements for ORDER_INCLUDE, not N+1.
 type RawOrder = Awaited<ReturnType<typeof prisma.retailOrder.findFirstOrThrow>> & {
   client: { fullName: string; companyName: string | null; email: string; phone: string | null };
-  items:  { qty: number; productId: number; unitPrice: { toString(): string } }[];
+  items:  { id: number; qty: number; productId: number; unitPrice: { toString(): string } | null; colorName: string | null }[];
 };
 
 // Shape order for API response — matches what AdminPanel.jsx reads:
 // order.displayId, order.client?.{name,email,phone}, order.items?.reduce()
-function shapeOrder(order: RawOrder) {
+function shapeOrder(order: any) {
   return {
     id:            order.displayId,          // used as React key
     displayId:     order.displayId,          // rendered directly in order row
@@ -66,8 +75,9 @@ function shapeOrder(order: RawOrder) {
       phone:       order.client.phone,       // order.client?.phone
     },
     items:     order.items,                  // order.items?.reduce((acc, it) => acc + it.qty, 0)
-    qty:       order.items.reduce((sum, item) => sum + item.qty, 0), // backward-compat
+    qty:       order.items.reduce((sum: number, item: any) => sum + item.qty, 0), // backward-compat
     status:    order.status,
+    sampleStatus: order.sampleStatus,
     placedAt:  order.placedAt,
     updatedAt: order.updatedAt,
   };
@@ -163,14 +173,14 @@ export async function createOrder(
         create: items.map((item) => ({
           productId: item.productId,
           qty:       item.qty,
-          unitPrice: priceMap.get(item.productId)!,
+          unitPrice: priceMap.get(item.productId) ?? null,
         })),
       },
     },
     include: ORDER_INCLUDE,
   });
 
-  return reply.status(201).send(shapeOrder(order as RawOrder));
+  return reply.status(201).send(shapeOrder(order as any));
 }
 
 export async function updateOrderStatus(
@@ -180,6 +190,8 @@ export async function updateOrderStatus(
   }>,
   reply: FastifyReply,
 ) {
+  const { status, sampleStatus, items } = request.body;
+
   const existing = await prisma.retailOrder.findFirst({
     where: {
       OR: [
@@ -190,18 +202,34 @@ export async function updateOrderStatus(
   });
   if (!existing) throw new NotFoundError('Order');
 
+  // Update item prices if provided (Granular update, protecting other fields)
+  if (items && items.length > 0) {
+    for (const item of items) {
+      await prisma.orderItem.update({
+        where: { id: item.id },
+        data:  { unitPrice: item.unitPrice },
+      });
+    }
+  }
+
+  // Update status and/or sampleStatus
   const updated = await prisma.retailOrder.update({
     where:   { id: existing.id },
-    data:    { status: request.body.status as OrderStatus },
+    data:    { 
+      ...(status && { status: status as any }),
+      ...(sampleStatus && { sampleStatus: sampleStatus as any }),
+    },
     include: ORDER_INCLUDE,
   });
 
-  const shaped = shapeOrder(updated as RawOrder);
+  const shaped = shapeOrder(updated as any);
 
-  // Trigger fire-and-forget status update email
-  sendOrderStatusUpdateEmail(shaped, request.body.status).catch((err) =>
-    console.error('Status update email trigger failed:', err)
-  );
+  // Trigger fire-and-forget status update email if order status changed
+  if (status) {
+    sendOrderStatusUpdateEmail(shaped, status).catch((err) =>
+      console.error('Status update email trigger failed:', err)
+    );
+  }
 
   return reply.status(200).send(shaped);
 }

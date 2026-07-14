@@ -113,7 +113,7 @@ const publicRoutes: FastifyPluginAsyncZod = async (fastify) => {
               productId: item.productId,
               colorName: item.colorName, // matches new colorName column
               qty:       item.qty,
-              unitPrice: priceMap.get(item.productId)!,
+              unitPrice: priceMap.get(item.productId) ?? null,
             })),
           },
         },

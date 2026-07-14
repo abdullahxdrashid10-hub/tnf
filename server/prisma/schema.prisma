@@ -146,6 +146,15 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum SampleStatus {
+  NONE
+  PENDING
+  IN_PRODUCTION
+  DISPATCHED
+  APPROVED
+  REJECTED
+}
+
 model Client {
   id          String        @id @default(cuid())
   fullName    String
@@ -159,17 +168,19 @@ model Client {
 }
 
 model RetailOrder {
-  id             String      @id @default(cuid())           // internal PK
-  displayId      String      @unique                         // e.g. "ORD-0091" — server-generated
+  id             String       @id @default(cuid())           // internal PK
+  displayId      String       @unique                         // e.g. "ORD-0091" — server-generated
   clientId       String
-  client         Client      @relation(fields: [clientId], references: [id])
-  status         OrderStatus @default(PENDING)
-  deliveryWindow String?     // buyer's requested delivery window — from public /quote
-  placedAt       DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  client         Client       @relation(fields: [clientId], references: [id])
+  status         OrderStatus  @default(PENDING)
+  sampleStatus   SampleStatus @default(NONE)
+  deliveryWindow String?      // buyer's requested delivery window — from public /quote
+  placedAt       DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
   items          OrderItem[]
 
   @@index([status])
+  @@index([sampleStatus])
   @@index([clientId])
   @@index([placedAt])
   @@index([displayId])
@@ -185,7 +196,7 @@ model OrderItem {
   product   Product     @relation(fields: [productId], references: [id])
   colorName String?     // buyer's selected finish, e.g. "Navy Blue" — nullable, set by the public quote endpoint
   qty       Int
-  unitPrice Decimal     @db.Decimal(10, 2)
+  unitPrice Decimal?    @db.Decimal(10, 2)
 
   @@index([orderId])
   @@index([productId])
