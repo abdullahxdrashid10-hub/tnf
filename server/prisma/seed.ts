@@ -101,44 +101,7 @@ const CATALOG: SeedProduct[] = [
   { name: 'Track Pants',                category: 'SPORTSWEAR', subCategory: 'Athleisure Wear',   priceUsd: 29.99, localImageName: 'track-pants.jpg',               colors: SEED_COLORS },
 ];
 
-// ── Mock retail clients ────────────────────────────────────────────────────────
-const MOCK_CLIENTS = [
-  { fullName: 'James Hartwell',    email: 'j.hartwell@mail.com',       phone: '+1 312 880 4421' },
-  { fullName: 'Sarah Mitchell',    email: 's.mitchell@corp.com',        phone: '+1 415 920 3310' },
-  { fullName: 'Omar Patel',        email: 'o.patel@business.net',       phone: '+971 50 123 4567' },
-  { fullName: 'Lena Kaufmann',     email: 'l.kaufmann@enterprise.de',   phone: '+49 89 4567 8901' },
-  { fullName: 'Carlos Reyes',      email: 'c.reyes@outlook.com',        phone: '+52 55 8765 4321' },
-];
 
-const MOCK_CONTRACTS = [
-  {
-    displayId:      'RFQ-192041',
-    companyName:    'Axiom Logistics',
-    repEmail:       'procurement@axiom.com',
-    deliveryWindow: 'Q3 2025 (Jul–Sep)',
-    unitCount:      500,
-    specsRaw:       'Industrial work shirts, navy, logo embroidery on chest, sizes S–3XL',
-    status:         'IN_PRODUCTION' as const,
-  },
-  {
-    displayId:      'RFQ-188830',
-    companyName:    'Crestline Hotels',
-    repEmail:       'uniforms@crestline.com',
-    deliveryWindow: 'Q2 2025 (Apr–Jun)',
-    unitCount:      1200,
-    specsRaw:       'Hospitality aprons + polo uniforms, burgundy & navy, staff name tags',
-    status:         'APPROVED' as const,
-  },
-  {
-    displayId:      'RFQ-141003',
-    companyName:    'Global FC Academy',
-    repEmail:       'kit@globalfc.ae',
-    deliveryWindow: 'Aug 2025',
-    unitCount:      300,
-    specsRaw:       'Sublimation football jerseys, club colours, player numbers 1–25',
-    status:         'COSTING' as const,
-  },
-];
 
 // ── syncSequences ─────────────────────────────────────────────────────────────
 async function syncSequences() {
@@ -174,6 +137,45 @@ async function syncSequences() {
 async function main() {
   console.log('🌱 Starting GTM seed...');
 
+  // A — Explicitly clear all mock retail orders, contracts, and clients by their IDs/emails if they exist
+  console.log('  Clearing any historical mock data...');
+  try {
+    const mockOrder = await prisma.retailOrder.findFirst({
+      where: { displayId: 'ORD-0091' }
+    });
+    if (mockOrder) {
+      await prisma.orderItem.deleteMany({
+        where: { orderId: mockOrder.id }
+      });
+      await prisma.retailOrder.delete({
+        where: { id: mockOrder.id }
+      });
+      console.log('  ✓ Mock order ORD-0091 deleted');
+    }
+
+    await prisma.contract.deleteMany({
+      where: {
+        displayId: { in: ['RFQ-192041', 'RFQ-188830', 'RFQ-141003'] }
+      }
+    });
+    console.log('  ✓ Mock contracts deleted');
+
+    await prisma.client.deleteMany({
+      where: {
+        email: { in: [
+          'j.hartwell@mail.com',
+          's.mitchell@corp.com',
+          'o.patel@business.net',
+          'l.kaufmann@enterprise.de',
+          'c.reyes@outlook.com'
+        ] }
+      }
+    });
+    console.log('  ✓ Mock clients deleted');
+  } catch (err) {
+    console.log('  ⚠ Error clearing mock data (might not exist yet):', (err as any).message);
+  }
+
   const productCount = await prisma.product.count();
 
   if (productCount === 0) {
@@ -192,50 +194,6 @@ async function main() {
       });
     }
     console.log(`  ✓ ${CATALOG.length} products seeded`);
-
-    // 2 — Seed clients
-    console.log('  Seeding clients...');
-    for (const c of MOCK_CLIENTS) {
-      await prisma.client.upsert({
-        where:  { email: c.email },
-        create: c,
-        update: c,
-      });
-    }
-    console.log('  ✓ Clients seeded');
-
-    // 3 — Seed a sample order tied to first client + first product
-    const firstClient  = await prisma.client.findFirst({ where: { email: MOCK_CLIENTS[0]!.email } });
-    const firstProduct = await prisma.product.findFirst({ where: { isActive: true } });
-
-    if (firstClient && firstProduct) {
-      await prisma.retailOrder.create({
-        data: {
-          displayId: 'ORD-0091',
-          clientId:  firstClient.id,
-          status:    'DISPATCHED',
-          items: {
-            create: {
-              productId: firstProduct.id,
-              qty:       3,
-              unitPrice: firstProduct.priceUsd,
-            },
-          },
-        },
-      });
-      console.log('  ✓ Sample order ORD-0091 seeded');
-    }
-
-    // 4 — Seed contracts
-    console.log('  Seeding contracts...');
-    for (const c of MOCK_CONTRACTS) {
-      await prisma.contract.upsert({
-        where:  { displayId: c.displayId },
-        create: c,
-        update: c,
-      });
-    }
-    console.log('  ✓ Contracts seeded');
   } else {
     console.log('  Database already has products. Skipping full catalog seed.');
   }
