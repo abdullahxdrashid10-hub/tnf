@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { catalogData, getProductColorImage } from './CatalogData';
+import { catalogData, getProductColorImage, getFallbackApparelImage } from './CatalogData';
 import { useCart } from './CartContext';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
@@ -18,6 +18,12 @@ function normalizeProduct(dbProduct) {
     (c) => c.name === dbProduct.name && c.subCategory === dbProduct.subCategory,
   );
   const standardColors = dbProduct.colors.map((c) => c.colorName);
+
+  let finalImage = catalog?.image || dbProduct.image;
+  if (!finalImage || finalImage.includes('picsum.photos')) {
+    finalImage = getFallbackApparelImage(dbProduct.name);
+  }
+
   return {
     dbId:           dbProduct.id,
     id:             dbProduct.id,
@@ -30,7 +36,7 @@ function normalizeProduct(dbProduct) {
       ? standardColors
       : ['Navy Blue', 'Black', 'Burgundy', 'White', 'Grey'],
     colorImages:    catalog?.colorImages || {},
-    image:          catalog?.image       || `https://picsum.photos/seed/${encodeURIComponent(dbProduct.localImageName || dbProduct.name)}/400/300`,
+    image:          finalImage,
     description:    catalog?.description || '',
   };
 }

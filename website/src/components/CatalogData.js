@@ -18,11 +18,11 @@ export const catalogData = [
     category: "Apparel",
     subCategory: "Casual Wear",
     price: "$24.99",
-    image: "/assets/Hoodie black.png",
-    localImageName: "Hoodie black.png",
+    image: "/assets/hoodie black.jpeg",
+    localImageName: "hoodie black.jpeg",
     standardColors: STANDARD_COLORS,
     colorImages: {
-      "Black":    "/assets/Hoodie black.png",
+      "Black":    "/assets/hoodie black.jpeg",
       "Burgundy": "/assets/hoodie burgendy.jpeg",
       "White":    "/assets/hoodie white.jpeg",
     },
@@ -915,6 +915,45 @@ export function getProductColorImage(product, color) {
     k => k.trim().toLowerCase() === target
   );
   return matchedKey ? product.colorImages[matchedKey] : null;
+}
+
+export function getFallbackApparelImage(name) {
+  if (!name) return 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=400&h=300&q=80';
+  const n = name.toLowerCase();
+  if (n.includes('t-shirt') || n.includes('tee') || n.includes('sleeveless')) {
+    return 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=400&h=300&q=80';
+  }
+  if (n.includes('polo')) {
+    return 'https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=400&h=300&q=80';
+  }
+  if (n.includes('shirt')) {
+    return 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=400&h=300&q=80';
+  }
+  if (n.includes('hoodie') || n.includes('sweatshirt')) {
+    return 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=400&h=300&q=80';
+  }
+  if (n.includes('pant') || n.includes('jogger') || n.includes('trouser') || n.includes('chino') || n.includes('overall') || n.includes('coverall')) {
+    return 'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=400&h=300&q=80';
+  }
+  if (n.includes('short')) {
+    return 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=400&h=300&q=80';
+  }
+  if (n.includes('jacket') || n.includes('blazer') || n.includes('suit') || n.includes('vest')) {
+    return 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=400&h=300&q=80';
+  }
+  if (n.includes('scrub') || n.includes('lab coat')) {
+    return 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=400&h=300&q=80';
+  }
+  if (n.includes('chef') || n.includes('apron')) {
+    return 'https://images.unsplash.com/photo-1577106263724-2c8e03bfe9cf?auto=format&fit=crop&w=400&h=300&q=80';
+  }
+  if (n.includes('jersey') || n.includes('teamwear')) {
+    return 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=400&h=300&q=80';
+  }
+  if (n.includes('cap') || n.includes('headwear')) {
+    return 'https://images.unsplash.com/photo-1589793907316-f94015540e24?auto=format&fit=crop&w=400&h=300&q=80';
+  }
+  return 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=400&h=300&q=80';
 }
 
 export default catalogData;
