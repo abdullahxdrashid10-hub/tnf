@@ -54,13 +54,27 @@ const Hero = () => {
             >
               Explore Collection
             </Link>
-            <a
+            <motion.a
               href="/assets/grey_textile_workwear_catalog.pdf"
               download
-              className="inline-block w-full sm:w-auto px-8 sm:px-10 py-3.5 sm:py-4 border border-[#B87333]/40 hover:border-[#B87333] text-[#FAF7F2] hover:text-[#B87333] text-xs font-bold tracking-[0.2em] uppercase rounded-sm transition-all text-center shadow-lg transform hover:-translate-y-0.5 bg-transparent"
+              className="group inline-flex items-center justify-center gap-3 w-full sm:w-auto px-8 sm:px-10 py-3.5 sm:py-4 border border-[#B87333]/30 text-[#FAF7F2] text-xs font-bold tracking-[0.2em] uppercase rounded-sm transition-all duration-355 text-center bg-white/[0.02] backdrop-blur-md relative overflow-hidden"
+              whileHover={{ 
+                scale: 1.03, 
+                borderColor: '#B87333', 
+                boxShadow: "0 0 20px rgba(184, 115, 51, 0.28)",
+                backgroundColor: "rgba(184, 115, 51, 0.06)" 
+              }}
+              whileTap={{ scale: 0.98 }}
             >
-              Download Catalog
-            </a>
+              <span>Download Catalog</span>
+              <svg 
+                className="w-3.5 h-3.5 stroke-[#B87333] transition-transform duration-300 group-hover:translate-y-0.5" 
+                fill="none" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+            </motion.a>
           </motion.div>
         </div>
 
